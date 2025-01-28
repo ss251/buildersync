@@ -7,7 +7,7 @@ import {
     composeContext,
     generateObject,
     ModelClass,
-    elizaLogger,
+    logger,
 } from "@elizaos/runtime";
 
 import { CreateResourceSchema, isCreateResourceContent } from "../types";
@@ -67,7 +67,7 @@ Resource has been stored in memory.`,
                 []
             );
         } catch (error) {
-            elizaLogger.error("Error creating resource:", error);
+            logger.error("Error creating resource:", error);
             callback(
                 { text: "Failed to create resource. Please check the logs." },
                 []

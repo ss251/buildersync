@@ -19,7 +19,7 @@ import { encodingForModel, type TiktokenModel } from "js-tiktoken";
 import { AutoTokenizer } from "@huggingface/transformers";
 import Together from "together-ai";
 import type { ZodSchema } from "zod";
-import { elizaLogger } from "./index.ts";
+import { logger } from "./index.ts";
 import {
     models,
     getModelSettings,
@@ -43,10 +43,6 @@ import {
     ModelProviderName,
     ServiceType,
     type ActionResponse,
-    type IVerifiableInferenceAdapter,
-    type VerifiableInferenceOptions,
-    type VerifiableInferenceResult,
-    //VerifiableInferenceProvider,
     type TelemetrySettings,
     TokenizerType,
 } from "./types.ts";
@@ -108,7 +104,7 @@ export async function trimTokens(
         );
     }
 
-    elizaLogger.warn(`Unsupported tokenizer type: ${tokenizerType}`);
+    logger.warn(`Unsupported tokenizer type: ${tokenizerType}`);
     return truncateTiktoken("gpt-4o", context, maxTokens);
 }
 
@@ -132,7 +128,7 @@ async function truncateAuto(
         // Decode back to text - js-tiktoken decode() returns a string directly
         return tokenizer.decode(truncatedTokens);
     } catch (error) {
-        elizaLogger.error("Error in trimTokens:", error);
+        logger.error("Error in trimTokens:", error);
         // Return truncated string if tokenization fails
         return context.slice(-maxTokens * 4); // Rough estimate of 4 chars per token
     }
@@ -160,7 +156,7 @@ async function truncateTiktoken(
         // Decode back to text - js-tiktoken decode() returns a string directly
         return encoding.decode(truncatedTokens);
     } catch (error) {
-        elizaLogger.error("Error in trimTokens:", error);
+        logger.error("Error in trimTokens:", error);
         // Return truncated string if tokenization fails
         return context.slice(-maxTokens * 4); // Rough estimate of 4 chars per token
     }
@@ -212,17 +208,17 @@ async function getOnChainEternalAISystemPrompt(
                 args: [new BigNumber(agentId)],
             });
             if (result) {
-                elizaLogger.info("on-chain system-prompt response", result[0]);
+                logger.info("on-chain system-prompt response", result[0]);
                 const value = result[0].toString().replace("0x", "");
                 const content = Buffer.from(value, "hex").toString("utf-8");
-                elizaLogger.info("on-chain system-prompt", content);
+                logger.info("on-chain system-prompt", content);
                 return await fetchEternalAISystemPrompt(runtime, content);
             } else {
                 return undefined;
             }
         } catch (error) {
-            elizaLogger.error(error);
-            elizaLogger.error("err", error);
+            logger.error(error);
+            logger.error("err", error);
         }
     }
     return undefined;
@@ -243,11 +239,11 @@ async function fetchEternalAISystemPrompt(
             IPFS,
             "https://gateway.lighthouse.storage/ipfs/"
         );
-        elizaLogger.info("fetch lightHouse", lightHouse);
+        logger.info("fetch lightHouse", lightHouse);
         const responseLH = await fetch(lightHouse, {
             method: "GET",
         });
-        elizaLogger.info("fetch lightHouse resp", responseLH);
+        logger.info("fetch lightHouse resp", responseLH);
         if (responseLH.ok) {
             const data = await responseLH.text();
             return data;
@@ -256,11 +252,11 @@ async function fetchEternalAISystemPrompt(
                 IPFS,
                 "https://cdn.eternalai.org/upload/"
             );
-            elizaLogger.info("fetch gcs", gcs);
+            logger.info("fetch gcs", gcs);
             const responseGCS = await fetch(gcs, {
                 method: "GET",
             });
-            elizaLogger.info("fetch lightHouse gcs", responseGCS);
+            logger.info("fetch lightHouse gcs", responseGCS);
             if (responseGCS.ok) {
                 const data = await responseGCS.text();
                 return data;
@@ -288,7 +284,7 @@ function getCloudflareGatewayBaseURL(
     const cloudflareAccountId = runtime.getSetting("CLOUDFLARE_AI_ACCOUNT_ID");
     const cloudflareGatewayId = runtime.getSetting("CLOUDFLARE_AI_GATEWAY_ID");
 
-    elizaLogger.debug("Cloudflare Gateway Configuration:", {
+    logger.debug("Cloudflare Gateway Configuration:", {
         isEnabled: isCloudflareEnabled,
         hasAccountId: !!cloudflareAccountId,
         hasGatewayId: !!cloudflareGatewayId,
@@ -296,26 +292,26 @@ function getCloudflareGatewayBaseURL(
     });
 
     if (!isCloudflareEnabled) {
-        elizaLogger.debug("Cloudflare Gateway is not enabled");
+        logger.debug("Cloudflare Gateway is not enabled");
         return undefined;
     }
 
     if (!cloudflareAccountId) {
-        elizaLogger.warn(
+        logger.warn(
             "Cloudflare Gateway is enabled but CLOUDFLARE_AI_ACCOUNT_ID is not set"
         );
         return undefined;
     }
 
     if (!cloudflareGatewayId) {
-        elizaLogger.warn(
+        logger.warn(
             "Cloudflare Gateway is enabled but CLOUDFLARE_AI_GATEWAY_ID is not set"
         );
         return undefined;
     }
 
     const baseURL = `https://gateway.ai.cloudflare.com/v1/${cloudflareAccountId}/${cloudflareGatewayId}/${provider.toLowerCase()}`;
-    elizaLogger.info("Using Cloudflare Gateway:", {
+    logger.info("Using Cloudflare Gateway:", {
         provider,
         baseURL,
         accountId: cloudflareAccountId,
@@ -354,7 +350,7 @@ export async function generateText({
         return "";
     }
 
-    elizaLogger.log("Generating text...");
+    logger.log("Generating text...");
 
     try {
     const response = await runtime.call('generate::text', {
@@ -364,7 +360,7 @@ export async function generateText({
       });
         return response;
     } catch (error) {
-        elizaLogger.error("Error in generateText:", error);
+        logger.error("Error in generateText:", error);
         throw error;
     }
 }
@@ -378,7 +374,6 @@ export async function generateText({
  * @param opts.frequency_penalty The frequency penalty to apply (0.0 to 2.0)
  * @param opts.presence_penalty The presence penalty to apply (0.0 to 2.0)
  * @param opts.temperature The temperature to control randomness (0.0 to 2.0)
- * @param opts.serverUrl The URL of the API server
  * @param opts.max_context_length Maximum allowed context length in tokens
  * @param opts.max_response_length Maximum allowed response length in tokens
  * @returns Promise resolving to "RESPOND", "IGNORE", "STOP" or null
@@ -395,7 +390,7 @@ export async function generateShouldRespond({
     let retryDelay = 1000;
     while (true) {
         try {
-            elizaLogger.debug(
+            logger.debug(
                 "Attempting to generate text with context:",
                 context
             );
@@ -405,27 +400,27 @@ export async function generateShouldRespond({
                 modelClass,
             });
 
-            elizaLogger.debug("Received response from generateText:", response);
+            logger.debug("Received response from generateText:", response);
             const parsedResponse = parseShouldRespondFromText(response.trim());
             if (parsedResponse) {
-                elizaLogger.debug("Parsed response:", parsedResponse);
+                logger.debug("Parsed response:", parsedResponse);
                 return parsedResponse;
             } else {
-                elizaLogger.debug("generateShouldRespond no response");
+                logger.debug("generateShouldRespond no response");
             }
         } catch (error) {
-            elizaLogger.error("Error in generateShouldRespond:", error);
+            logger.error("Error in generateShouldRespond:", error);
             if (
                 error instanceof TypeError &&
                 error.message.includes("queueTextCompletion")
             ) {
-                elizaLogger.error(
+                logger.error(
                     "TypeError: Cannot read properties of null (reading 'queueTextCompletion')"
                 );
             }
         }
 
-        elizaLogger.log(`Retrying in ${retryDelay}ms...`);
+        logger.log(`Retrying in ${retryDelay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
         retryDelay *= 2;
     }
@@ -443,7 +438,7 @@ export async function splitChunks(
     chunkSize = 512,
     bleed = 20
 ): Promise<string[]> {
-    elizaLogger.debug(`[splitChunks] Starting text split`);
+    logger.debug(`[splitChunks] Starting text split`);
 
     const textSplitter = new RecursiveCharacterTextSplitter({
         chunkSize: Number(chunkSize),
@@ -451,7 +446,7 @@ export async function splitChunks(
     });
 
     const chunks = await textSplitter.splitText(content);
-    elizaLogger.debug(`[splitChunks] Split complete:`, {
+    logger.debug(`[splitChunks] Split complete:`, {
         numberOfChunks: chunks.length,
         averageChunkSize:
             chunks.reduce((acc, chunk) => acc + chunk.length, 0) /
@@ -470,7 +465,6 @@ export async function splitChunks(
  * @param opts.frequency_penalty The frequency penalty to apply (0.0 to 2.0)
  * @param opts.presence_penalty The presence penalty to apply (0.0 to 2.0)
  * @param opts.temperature The temperature to control randomness (0.0 to 2.0)
- * @param opts.serverUrl The URL of the API server
  * @param opts.max_context_length Maximum allowed context length in tokens
  * @param opts.max_response_length Maximum allowed response length in tokens
  * @returns Promise resolving to a boolean value parsed from the model's response
@@ -504,7 +498,7 @@ export async function generateTrueOrFalse({
                 return parsedResponse;
             }
         } catch (error) {
-            elizaLogger.error("Error in generateTrueOrFalse:", error);
+            logger.error("Error in generateTrueOrFalse:", error);
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -521,7 +515,6 @@ export async function generateTrueOrFalse({
  * @param opts.frequency_penalty The frequency penalty to apply (0.0 to 2.0)
  * @param opts.presence_penalty The presence penalty to apply (0.0 to 2.0)
  * @param opts.temperature The temperature to control randomness (0.0 to 2.0)
- * @param opts.serverUrl The URL of the API server
  * @param opts.token The API token for authentication
  * @param opts.max_context_length Maximum allowed context length in tokens
  * @param opts.max_response_length Maximum allowed response length in tokens
@@ -537,7 +530,7 @@ export async function generateTextArray({
     modelClass: ModelClass;
 }): Promise<string[]> {
     if (!context) {
-        elizaLogger.error("generateTextArray context is empty");
+        logger.error("generateTextArray context is empty");
         return [];
     }
     let retryDelay = 1000;
@@ -555,7 +548,7 @@ export async function generateTextArray({
                 return parsedResponse;
             }
         } catch (error) {
-            elizaLogger.error("Error in generateTextArray:", error);
+            logger.error("Error in generateTextArray:", error);
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -573,7 +566,7 @@ export async function generateObjectDeprecated({
     modelClass: ModelClass;
 }): Promise<any> {
     if (!context) {
-        elizaLogger.error("generateObjectDeprecated context is empty");
+        logger.error("generateObjectDeprecated context is empty");
         return null;
     }
     let retryDelay = 1000;
@@ -591,7 +584,7 @@ export async function generateObjectDeprecated({
                 return parsedResponse;
             }
         } catch (error) {
-            elizaLogger.error("Error in generateObject:", error);
+            logger.error("Error in generateObject:", error);
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -609,7 +602,7 @@ export async function generateObjectArray({
     modelClass: ModelClass;
 }): Promise<any[]> {
     if (!context) {
-        elizaLogger.error("generateObjectArray context is empty");
+        logger.error("generateObjectArray context is empty");
         return [];
     }
     let retryDelay = 1000;
@@ -627,7 +620,7 @@ export async function generateObjectArray({
                 return parsedResponse;
             }
         } catch (error) {
-            elizaLogger.error("Error in generateTextArray:", error);
+            logger.error("Error in generateTextArray:", error);
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -660,11 +653,11 @@ export async function generateMessageResponse({
     const max_context_length = modelSettings.maxInputTokens;
 
     context = await trimTokens(context, max_context_length, runtime);
-    elizaLogger.debug("Context:", context);
+    logger.debug("Context:", context);
     let retryLength = 1000; // exponential backoff
     while (true) {
         try {
-            elizaLogger.log("Generating message response..");
+            logger.log("Generating message response..");
 
             const response = await generateText({
                 runtime,
@@ -675,17 +668,17 @@ export async function generateMessageResponse({
             // try parsing the response as JSON, if null then try again
             const parsedContent = parseJSONObjectFromText(response) as Content;
             if (!parsedContent) {
-                elizaLogger.debug("parsedContent is null, retrying");
+                logger.debug("parsedContent is null, retrying");
                 continue;
             }
 
             return parsedContent;
         } catch (error) {
-            elizaLogger.error("ERROR:", error);
+            logger.error("ERROR:", error);
             // wait for 2 seconds
             retryLength *= 2;
             await new Promise((resolve) => setTimeout(resolve, retryLength));
-            elizaLogger.debug("Retrying...");
+            logger.debug("Retrying...");
         }
     }
 }
@@ -715,7 +708,7 @@ export const generateImage = async (
 }> => {
     const modelSettings = getImageModelSettings(runtime.imageModelProvider);
     const model = modelSettings.name;
-    elizaLogger.info("Generating image with options:", {
+    logger.info("Generating image with options:", {
         imageModelProvider: model,
     });
 
@@ -818,7 +811,7 @@ export const generateImage = async (
             const base64s = await Promise.all(
                 togetherResponse.data.map(async (image) => {
                     if (!image.url) {
-                        elizaLogger.error("Missing URL in image data:", image);
+                        logger.error("Missing URL in image data:", image);
                         throw new Error("Missing URL in Together AI response");
                     }
 
@@ -844,7 +837,7 @@ export const generateImage = async (
                 throw new Error("No images generated by Together AI");
             }
 
-            elizaLogger.debug(`Generated ${base64s.length} images`);
+            logger.debug(`Generated ${base64s.length} images`);
             return { success: true, data: base64s };
         } else if (runtime.imageModelProvider === ModelProviderName.FAL) {
             fal.config({
@@ -884,7 +877,7 @@ export const generateImage = async (
                 logs: true,
                 onQueueUpdate: (update) => {
                     if (update.status === "IN_PROGRESS") {
-                        elizaLogger.info(update.logs.map((log) => log.message));
+                        logger.info(update.logs.map((log) => log.message));
                     }
                 },
             });
@@ -1185,9 +1178,6 @@ export const generateObject = async ({
             runtime,
             context,
             modelClass,
-            verifiableInference,
-            verifiableInferenceAdapter,
-            verifiableInferenceOptions,
         });
 
         return response;
@@ -1229,9 +1219,6 @@ export async function handleProvider(
         runtime,
         context,
         modelClass,
-        //verifiableInference,
-        //verifiableInferenceAdapter,
-        //verifiableInferenceOptions,
     } = options;
     switch (provider) {
         case ModelProviderName.OPENAI:
@@ -1272,7 +1259,7 @@ export async function handleProvider(
             return await handleLivepeer(options);
         default: {
             const errorMessage = `Unsupported provider: ${provider}`;
-            elizaLogger.error(errorMessage);
+            logger.error(errorMessage);
             throw new Error(errorMessage);
         }
     }
@@ -1324,9 +1311,9 @@ async function handleAnthropic({
     modelOptions,
     runtime,
 }: ProviderOptions): Promise<GenerateObjectResult<unknown>> {
-    elizaLogger.debug("Handling Anthropic request with Cloudflare check");
+    logger.debug("Handling Anthropic request with Cloudflare check");
     const baseURL = getCloudflareGatewayBaseURL(runtime, "anthropic");
-    elizaLogger.debug("Anthropic handleAnthropic baseURL:", { baseURL });
+    logger.debug("Anthropic handleAnthropic baseURL:", { baseURL });
 
     const anthropic = createAnthropic({ apiKey, baseURL });
     return await aiGenerateObject({
@@ -1381,9 +1368,9 @@ async function handleGroq({
     modelOptions,
     runtime,
 }: ProviderOptions): Promise<GenerateObjectResult<unknown>> {
-    elizaLogger.debug("Handling Groq request with Cloudflare check");
+    logger.debug("Handling Groq request with Cloudflare check");
     const baseURL = getCloudflareGatewayBaseURL(runtime, "groq");
-    elizaLogger.debug("Groq handleGroq baseURL:", { baseURL });
+    logger.debug("Groq handleGroq baseURL:", { baseURL });
 
     const groq = createGroq({ apiKey, baseURL });
     return await aiGenerateObject({
@@ -1639,29 +1626,29 @@ export async function generateTweetActions({
                 context,
                 modelClass,
             });
-            elizaLogger.debug(
+            logger.debug(
                 "Received response from generateText for tweet actions:",
                 response
             );
             const { actions } = parseActionResponseFromText(response.trim());
             if (actions) {
-                elizaLogger.debug("Parsed tweet actions:", actions);
+                logger.debug("Parsed tweet actions:", actions);
                 return actions;
             } else {
-                elizaLogger.debug("generateTweetActions no valid response");
+                logger.debug("generateTweetActions no valid response");
             }
         } catch (error) {
-            elizaLogger.error("Error in generateTweetActions:", error);
+            logger.error("Error in generateTweetActions:", error);
             if (
                 error instanceof TypeError &&
                 error.message.includes("queueTextCompletion")
             ) {
-                elizaLogger.error(
+                logger.error(
                     "TypeError: Cannot read properties of null (reading 'queueTextCompletion')"
                 );
             }
         }
-        elizaLogger.log(`Retrying in ${retryDelay}ms...`);
+        logger.log(`Retrying in ${retryDelay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
         retryDelay *= 2;
     }

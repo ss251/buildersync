@@ -4,7 +4,7 @@
 import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite"
 
 import {
-	elizaLogger
+	logger
 } from "@elizaos/runtime"
 
 // import { intifacePlugin } from "@elizaos/plugin-intiface";
@@ -17,16 +17,16 @@ const __dirname = path.dirname(__filename) // get the name of the directory
 
 export function initializeDatabase(dataDir: string) {
 		const filePath = process.env.SQLITE_FILE ?? path.resolve(dataDir, "db.sqlite")
-		elizaLogger.info(`Initializing SQLite database at ${filePath}...`)
+		logger.info(`Initializing SQLite database at ${filePath}...`)
 		const db = new SqliteDatabaseAdapter(new Database(filePath))
 
 		// Test the connection
 		db.init()
 			.then(() => {
-				elizaLogger.success("Successfully connected to SQLite database")
+				logger.success("Successfully connected to SQLite database")
 			})
 			.catch((error) => {
-				elizaLogger.error("Failed to connect to SQLite:", error)
+				logger.error("Failed to connect to SQLite:", error)
 			})
 
 		return db

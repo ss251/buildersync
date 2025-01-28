@@ -1,15 +1,11 @@
-import { Actor, Thought } from './types';
 import {
-  Action,
-  State,
-  IElizaRuntime,
-  Message,
-  ActionCallMemory,
-  ActionResultMemory,
-} from './types';
-import zodToJsonSchema from 'zod-to-json-schema';
-import { toHex } from 'viem';
+  Action, ActionCallMemory,
+  ActionResultMemory, Actor, IElizaRuntime,
+  Message, State, Thought
+} from '@elizaos/core';
 import { UUID } from 'crypto';
+import { toHex } from 'viem';
+import zodToJsonSchema from 'zod-to-json-schema';
 
 type ActionFormatterData = {
   runtime: IElizaRuntime;

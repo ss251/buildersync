@@ -15,7 +15,7 @@ import {
   formatContextDetails,
   formatMsg,
   formatThought,
-} from '../formatters';
+} from '../../../runtime/src/formatters';
 import { loadPrompt } from '../prompt';
 
 import dataLoaderPrompt from "./data-loader.md"

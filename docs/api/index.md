@@ -93,7 +93,7 @@
 - [CharacterSchema](variables/CharacterSchema.md)
 - [evaluationTemplate](variables/evaluationTemplate.md)
 - [knowledge](variables/knowledge.md)
-- [elizaLogger](variables/elizaLogger.md)
+- [logger](variables/logger.md)
 - [models](variables/models.md)
 - [messageCompletionFooter](variables/messageCompletionFooter.md)
 - [shouldRespondFooter](variables/shouldRespondFooter.md)

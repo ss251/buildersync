@@ -1,11 +1,10 @@
-import { Character, ModelProviderName } from "./types.ts";
+import { Character, ModelProviderName } from "../../packages/runtime/src/types.ts";
 
 export const defaultCharacter: Character = {
     name: "Eliza",
     username: "eliza",
     plugins: [],
     clients: [],
-    modelProvider: ModelProviderName.LLAMALOCAL,
     settings: {
         secrets: {},
         voice: {

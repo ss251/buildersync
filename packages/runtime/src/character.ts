@@ -1,5 +1,5 @@
 import { z } from "zod";
-import elizaLogger from "./logger";
+import logger from "./logger";
 
 // Helper schemas for nested types
 export const MessageExampleSchema = z.object({
@@ -127,7 +127,7 @@ export function validateCharacterConfig(json: unknown): CharacterConfig {
             );
 
             Object.entries(groupedErrors).forEach(([field, messages]) => {
-                elizaLogger.error(
+                logger.error(
                     `Validation errors in ${field}: ${messages.join(" - ")}`
                 );
             });

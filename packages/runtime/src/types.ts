@@ -1184,37 +1184,6 @@ export interface IMemoryManager {
     countMemories(roomId: UUID, unique?: boolean): Promise<number>;
 }
 
-export interface IRAGKnowledgeManager {
-    runtime: IAgentRuntime;
-    tableName: string;
-
-    getKnowledge(params: {
-        query?: string;
-        id?: UUID;
-        limit?: number;
-        conversationContext?: string;
-        agentId?: UUID;
-    }): Promise<RAGKnowledgeItem[]>;
-    createKnowledge(item: RAGKnowledgeItem): Promise<void>;
-    removeKnowledge(id: UUID): Promise<void>;
-    searchKnowledge(params: {
-        agentId: UUID;
-        embedding: Float32Array | number[];
-        match_threshold?: number;
-        match_count?: number;
-        searchText?: string;
-    }): Promise<RAGKnowledgeItem[]>;
-    clearKnowledge(shared?: boolean): Promise<void>;
-    processFile(file: {
-        path: string;
-        content: string;
-        type: "pdf" | "md" | "txt";
-        isShared: boolean;
-    }): Promise<void>;
-    cleanupDeletedKnowledgeFiles(): Promise<void>;
-    generateScopedId(path: string, isShared: boolean): UUID;
-}
-
 export type CacheOptions = {
     expires?: number;
 };
@@ -1256,7 +1225,6 @@ export abstract class Service {
 export interface IAgentRuntime {
     // Properties
     agentId: UUID;
-    serverUrl: string;
     databaseAdapter: IDatabaseAdapter;
     character: Character;
     providers: Provider[];
@@ -1272,7 +1240,6 @@ export interface IAgentRuntime {
     descriptionManager: IMemoryManager;
     documentsManager: IMemoryManager;
     knowledgeManager: IMemoryManager;
-    ragKnowledgeManager: IRAGKnowledgeManager;
     loreManager: IMemoryManager;
 
     cacheManager: ICacheManager;
@@ -1281,8 +1248,6 @@ export interface IAgentRuntime {
     // any could be EventEmitter
     // but I think the real solution is forthcoming as a base client interface
     clients: Record<string, any>;
-
-    verifiableInferenceAdapter?: IVerifiableInferenceAdapter | null;
 
     initialize(): Promise<void>;
 
@@ -1589,32 +1554,6 @@ export interface VerifiableInferenceResult {
     provider: VerifiableInferenceProvider;
     /** Timestamp */
     timestamp: number;
-}
-
-/**
- * Interface for verifiable inference adapters
- */
-export interface IVerifiableInferenceAdapter {
-    options: any;
-    /**
-     * Generate text with verifiable proof
-     * @param context The input text/prompt
-     * @param modelClass The model class/name to use
-     * @param options Additional provider-specific options
-     * @returns Promise containing the generated text and proof data
-     */
-    generateText(
-        context: string,
-        modelClass: string,
-        options?: VerifiableInferenceOptions,
-    ): Promise<VerifiableInferenceResult>;
-
-    /**
-     * Verify the proof of a generated response
-     * @param result The result containing response and proof to verify
-     * @returns Promise indicating if the proof is valid
-     */
-    verifyProof(result: VerifiableInferenceResult): Promise<boolean>;
 }
 
 export enum TokenizerType {

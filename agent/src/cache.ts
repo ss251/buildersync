@@ -9,7 +9,7 @@ import {
     CacheStore,
     type Character,
     DbCacheAdapter,
-    elizaLogger,
+    logger,
     FsCacheAdapter,
     type IDatabaseCacheAdapter
 } from "@elizaos/core"
@@ -37,7 +37,7 @@ export function initializeCache(cacheStore: string, character: Character, baseDi
 	switch (cacheStore) {
 		case CacheStore.REDIS:
 			if (process.env.REDIS_URL) {
-				elizaLogger.info("Connecting to Redis...")
+				logger.info("Connecting to Redis...")
 				const redisClient = new RedisClient(process.env.REDIS_URL)
 				if (!character?.id) {
 					throw new Error("CacheStore.REDIS requires id to be set in character definition")
@@ -51,14 +51,14 @@ export function initializeCache(cacheStore: string, character: Character, baseDi
 
 		case CacheStore.DATABASE:
 			if (db) {
-				elizaLogger.info("Using Database Cache...")
+				logger.info("Using Database Cache...")
 				return initializeDbCache(character, db)
 			} else {
 				throw new Error("Database adapter is not provided for CacheStore.Database.")
 			}
 
 		case CacheStore.FILESYSTEM:
-			elizaLogger.info("Using File System Cache...")
+			logger.info("Using File System Cache...")
 			if (!baseDir) {
 				throw new Error("baseDir must be provided for CacheStore.FILESYSTEM.")
 			}

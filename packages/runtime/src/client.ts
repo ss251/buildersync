@@ -9,8 +9,8 @@ import {
   MemoryMetadata,
   Message,
   IElizaRuntime,
-} from './types';
-import { contextLoderPromptTemplate } from './prompts';
+} from '../../core/src/types';
+import { contextLoderPromptTemplate } from '../../core/src/prompts';
 import {
   generateOutput,
   LLMParams,
@@ -18,8 +18,8 @@ import {
   generateChatOutput,
   ActionCallOutput,
   generateActionResults,
-} from './generate';
-import { createFunction } from './utils';
+} from '../../core/src/generate';
+import { createFunction } from '../../core/src/utils';
 
 export async function handleRoomMessage(
   runtime: IElizaRuntime,

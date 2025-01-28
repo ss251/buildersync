@@ -2,7 +2,7 @@ import type { Message } from "@telegraf/types";
 import type { Context, Telegraf } from "telegraf";
 import {
     composeContext,
-    elizaLogger,
+    logger,
     ServiceType,
     composeRandomUser,
 } from "@elizaos/runtime";
@@ -86,7 +86,7 @@ export class MessageManager {
         this.runtime = runtime;
 
         this._initializeTeamMemberUsernames().catch((error) =>
-            elizaLogger.error(
+            logger.error(
                 "Error initializing team member usernames:",
                 error
             )
@@ -130,12 +130,12 @@ export class MessageManager {
                 const chat = await this.bot.telegram.getChat(id);
                 if ("username" in chat && chat.username) {
                     this.teamMemberUsernames.set(id, chat.username);
-                    elizaLogger.info(
+                    logger.info(
                         `Cached username for team member ${id}: ${chat.username}`
                     );
                 }
             } catch (error) {
-                elizaLogger.error(
+                logger.error(
                     `Error getting username for team member ${id}:`,
                     error
                 );
@@ -146,16 +146,16 @@ export class MessageManager {
     private _startAutoPostMonitoring(): void {
         // Wait for bot to be ready
         if (this.bot.botInfo) {
-            elizaLogger.info(
+            logger.info(
                 "[AutoPost Telegram] Bot ready, starting monitoring"
             );
             this._initializeAutoPost();
         } else {
-            elizaLogger.info(
+            logger.info(
                 "[AutoPost Telegram] Bot not ready, waiting for ready event"
             );
             this.bot.telegram.getMe().then(() => {
-                elizaLogger.info(
+                logger.info(
                     "[AutoPost Telegram] Bot ready, starting monitoring"
                 );
                 this._initializeAutoPost();
@@ -279,15 +279,15 @@ export class MessageManager {
                     state = await this.runtime.updateRecentMessageState(state);
                     await this.runtime.evaluate(memory, state, true);
                 } catch (error) {
-                    elizaLogger.warn("[AutoPost Telegram] Error:", error);
+                    logger.warn("[AutoPost Telegram] Error:", error);
                 }
             } else {
-                elizaLogger.warn(
+                logger.warn(
                     "[AutoPost Telegram] Activity within threshold. Not posting."
                 );
             }
         } catch (error) {
-            elizaLogger.warn(
+            logger.warn(
                 "[AutoPost Telegram] Error checking channel activity:",
                 error
             );
@@ -296,7 +296,7 @@ export class MessageManager {
 
     private async _monitorPinnedMessages(ctx: Context): Promise<void> {
         if (!this.autoPostConfig.pinnedMessagesGroups.length) {
-            elizaLogger.warn(
+            logger.warn(
                 "[AutoPost Telegram] Auto post config no pinned message groups"
             );
             return;
@@ -320,7 +320,7 @@ export class MessageManager {
         if (!mainChannel) return;
 
         try {
-            elizaLogger.info(
+            logger.info(
                 `[AutoPost Telegram] Processing pinned message in group ${ctx.chat.id}`
             );
 
@@ -405,7 +405,7 @@ export class MessageManager {
             state = await this.runtime.updateRecentMessageState(state);
             await this.runtime.evaluate(memory, state, true);
         } catch (error) {
-            elizaLogger.warn(
+            logger.warn(
                 `[AutoPost Telegram] Error processing pinned message:`,
                 error
             );
@@ -643,7 +643,7 @@ export class MessageManager {
         try {
             let imageUrl: string | null = null;
 
-            elizaLogger.info(`Telegram Message: ${message}`);
+            logger.info(`Telegram Message: ${message}`);
 
             if ("photo" in message && message.photo?.length > 0) {
                 const photo = message.photo[message.photo.length - 1];
@@ -694,7 +694,7 @@ export class MessageManager {
             "text" in message &&
             message.text?.includes(`@${this.bot.botInfo?.username}`)
         ) {
-            elizaLogger.info(`Bot mentioned`);
+            logger.info(`Bot mentioned`);
             return true;
         }
 
@@ -997,16 +997,16 @@ export class MessageManager {
                 }
             }
 
-            elizaLogger.info(
+            logger.info(
                 `${
                     type.charAt(0).toUpperCase() + type.slice(1)
                 } sent successfully: ${mediaPath}`
             );
         } catch (error) {
-            elizaLogger.error(
+            logger.error(
                 `Failed to send ${type}. Path: ${mediaPath}. Error: ${error.message}`
             );
-            elizaLogger.debug(error.stack);
+            logger.debug(error.stack);
             throw error;
         }
     }
@@ -1406,8 +1406,8 @@ export class MessageManager {
 
             await this.runtime.evaluate(memory, state, shouldRespond, callback);
         } catch (error) {
-            elizaLogger.error("❌ Error handling message:", error);
-            elizaLogger.error("Error sending message:", error);
+            logger.error("❌ Error handling message:", error);
+            logger.error("Error sending message:", error);
         }
     }
 }

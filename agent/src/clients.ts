@@ -14,7 +14,7 @@ import { TwitterClientInterface } from "@elizaos/client-twitter"
 import { FarcasterClientInterface } from "@elizaos/client-farcaster"
 import { JeeterClientInterface } from "@elizaos/client-simsai"
 import { XmtpClientInterface } from "@elizaos/client-xmtp"
-import { Character, Client, Clients, elizaLogger, IAgentRuntime } from "@elizaos/core"
+import { Character, Client, Clients, logger, IAgentRuntime } from "@elizaos/core"
 
 // also adds plugins from character file into the runtime
 export async function initializeClients(character: Character, runtime: IAgentRuntime) {
@@ -22,7 +22,7 @@ export async function initializeClients(character: Character, runtime: IAgentRun
 	// and if we want two we can explicitly support it
 	const clients: Record<string, any> = {}
 	const clientTypes: string[] = character.clients?.map((str) => str.toLowerCase()) || []
-	elizaLogger.log("initializeClients", clientTypes, "for", character.name)
+	logger.log("initializeClients", clientTypes, "for", character.name)
 
 
 	// Start Auto Client if "auto" detected as a configured client
@@ -90,7 +90,7 @@ export async function initializeClients(character: Character, runtime: IAgentRun
 		if (simsaiClient) clients.simsai = simsaiClient
 	}
 
-	elizaLogger.log("client keys", Object.keys(clients))
+	logger.log("client keys", Object.keys(clients))
 
 	// TODO: Add Slack client to the list
 	// Initialize clients as an object
@@ -122,7 +122,7 @@ export async function initializeClients(character: Character, runtime: IAgentRun
 				for (const client of plugin.clients) {
 					const startedClient = await client.start(runtime)
 					const clientType = determineClientType(client)
-					elizaLogger.debug(`Initializing client of type: ${clientType}`)
+					logger.debug(`Initializing client of type: ${clientType}`)
 					clients[clientType] = startedClient
 				}
 			}

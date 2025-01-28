@@ -3,7 +3,7 @@
 import { spawn } from "child_process";
 import {
     type ITranscriptionService,
-    elizaLogger,
+    logger,
     stringToUuid,
     composeContext,
     getEmbeddingZeroVector,
@@ -96,11 +96,11 @@ export class SttTtsPlugin implements Plugin {
     private ttsAbortController: AbortController | null = null;
 
     onAttach(_space: Space) {
-        elizaLogger.log("[SttTtsPlugin] onAttach => space was attached");
+        logger.log("[SttTtsPlugin] onAttach => space was attached");
     }
 
     init(params: { space: Space; pluginConfig?: Record<string, any> }): void {
-        elizaLogger.log(
+        logger.log(
             "[SttTtsPlugin] init => Space fully ready. Subscribing to events.",
         );
 
@@ -160,13 +160,13 @@ export class SttTtsPlugin implements Plugin {
 
         if (!this.isSpeaking) {
             this.userSpeakingTimer = setTimeout(() => {
-                elizaLogger.log(
+                logger.log(
                     "[SttTtsPlugin] start processing audio for user =>",
                     data.userId,
                 );
                 this.userSpeakingTimer = null;
                 this.processAudio(data.userId).catch((err) =>
-                    elizaLogger.error(
+                    logger.error(
                         "[SttTtsPlugin] handleSilence error =>",
                         err,
                     ),
@@ -199,7 +199,7 @@ export class SttTtsPlugin implements Plugin {
                 if (this.ttsAbortController) {
                     this.ttsAbortController.abort();
                     this.isSpeaking = false;
-                    elizaLogger.log("[SttTtsPlugin] TTS playback interrupted");
+                    logger.log("[SttTtsPlugin] TTS playback interrupted");
                 }
             }
         }
@@ -265,7 +265,7 @@ export class SttTtsPlugin implements Plugin {
         }
         this.isProcessingAudio = true;
         try {
-            elizaLogger.log(
+            logger.log(
                 "[SttTtsPlugin] Starting audio processing for user:",
                 userId,
             );
@@ -273,13 +273,13 @@ export class SttTtsPlugin implements Plugin {
             this.pcmBuffers.clear();
 
             if (!chunks.length) {
-                elizaLogger.warn(
+                logger.warn(
                     "[SttTtsPlugin] No audio chunks for user =>",
                     userId,
                 );
                 return;
             }
-            elizaLogger.log(
+            logger.log(
                 `[SttTtsPlugin] Flushing STT buffer for user=${userId}, chunks=${chunks.length}`,
             );
 
@@ -298,31 +298,31 @@ export class SttTtsPlugin implements Plugin {
             const sttText =
                 await this.transcriptionService.transcribe(wavBuffer);
 
-            elizaLogger.log(
+            logger.log(
                 `[SttTtsPlugin] Transcription result: "${sttText}"`,
             );
 
             if (!sttText || !sttText.trim()) {
-                elizaLogger.warn(
+                logger.warn(
                     "[SttTtsPlugin] No speech recognized for user =>",
                     userId,
                 );
                 return;
             }
-            elizaLogger.log(
+            logger.log(
                 `[SttTtsPlugin] STT => user=${userId}, text="${sttText}"`,
             );
 
             // Get response
             const replyText = await this.handleUserMessage(sttText, userId);
             if (!replyText || !replyText.length || !replyText.trim()) {
-                elizaLogger.warn(
+                logger.warn(
                     "[SttTtsPlugin] No replyText for user =>",
                     userId,
                 );
                 return;
             }
-            elizaLogger.log(
+            logger.log(
                 `[SttTtsPlugin] user=${userId}, reply="${replyText}"`,
             );
             this.isProcessingAudio = false;
@@ -330,7 +330,7 @@ export class SttTtsPlugin implements Plugin {
             // Use the standard speak method with queue
             await this.speakText(replyText);
         } catch (error) {
-            elizaLogger.error("[SttTtsPlugin] processAudio error =>", error);
+            logger.error("[SttTtsPlugin] processAudio error =>", error);
         } finally {
             this.isProcessingAudio = false;
         }
@@ -344,7 +344,7 @@ export class SttTtsPlugin implements Plugin {
         if (!this.isSpeaking) {
             this.isSpeaking = true;
             this.processTtsQueue().catch((err) => {
-                elizaLogger.error(
+                logger.error(
                     "[SttTtsPlugin] processTtsQueue error =>",
                     err,
                 );
@@ -367,20 +367,20 @@ export class SttTtsPlugin implements Plugin {
                 const ttsAudio = await this.elevenLabsTts(text);
                 const pcm = await this.convertMp3ToPcm(ttsAudio, 48000);
                 if (signal.aborted) {
-                    elizaLogger.log(
+                    logger.log(
                         "[SttTtsPlugin] TTS interrupted before streaming",
                     );
                     return;
                 }
                 await this.streamToJanus(pcm, 48000);
                 if (signal.aborted) {
-                    elizaLogger.log(
+                    logger.log(
                         "[SttTtsPlugin] TTS interrupted after streaming",
                     );
                     return;
                 }
             } catch (err) {
-                elizaLogger.error("[SttTtsPlugin] TTS streaming error =>", err);
+                logger.error("[SttTtsPlugin] TTS streaming error =>", err);
             } finally {
                 // Clean up the AbortController
                 this.ttsAbortController = null;
@@ -503,7 +503,7 @@ export class SttTtsPlugin implements Plugin {
         response.source = "discord";
 
         if (!response) {
-            elizaLogger.error(
+            logger.error(
                 "[SttTtsPlugin] No response from generateMessageResponse",
             );
             return;
@@ -520,7 +520,7 @@ export class SttTtsPlugin implements Plugin {
     }
 
     private async _shouldIgnore(message: Memory): Promise<boolean> {
-        elizaLogger.debug("message.content: ", message.content);
+        logger.debug("message.content: ", message.content);
         // if the message is 3 characters or less, ignore it
         if ((message.content as Content).text.length < 3) {
             return true;
@@ -606,7 +606,7 @@ export class SttTtsPlugin implements Plugin {
             return false;
         }
 
-        elizaLogger.error(
+        logger.error(
             "Invalid response from response generateText:",
             response,
         );
@@ -705,7 +705,7 @@ export class SttTtsPlugin implements Plugin {
             offset += FRAME_SIZE
         ) {
             if (this.ttsAbortController?.signal.aborted) {
-                elizaLogger.log("[SttTtsPlugin] streamToJanus interrupted");
+                logger.log("[SttTtsPlugin] streamToJanus interrupted");
                 return;
             }
             const frame = new Int16Array(FRAME_SIZE);
@@ -723,7 +723,7 @@ export class SttTtsPlugin implements Plugin {
      */
     public addMessage(role: "system" | "user" | "assistant", content: string) {
         this.chatContext.push({ role, content });
-        elizaLogger.log(
+        logger.log(
             `[SttTtsPlugin] addMessage => role=${role}, content=${content}`,
         );
     }
@@ -733,11 +733,11 @@ export class SttTtsPlugin implements Plugin {
      */
     public clearChatContext() {
         this.chatContext = [];
-        elizaLogger.log("[SttTtsPlugin] clearChatContext => done");
+        logger.log("[SttTtsPlugin] clearChatContext => done");
     }
 
     cleanup(): void {
-        elizaLogger.log("[SttTtsPlugin] cleanup => releasing resources");
+        logger.log("[SttTtsPlugin] cleanup => releasing resources");
         this.pcmBuffers.clear();
         this.userSpeakingTimer = null;
         this.ttsQueue = [];

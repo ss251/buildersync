@@ -1,8 +1,8 @@
-[@elizaos/runtime v0.1.7](../index.md) / elizaLogger
+[@elizaos/runtime v0.1.7](../index.md) / logger
 
-# Variable: elizaLogger
+# Variable: logger
 
-> `const` **elizaLogger**: `ElizaLogger`
+> `const` **logger**: `ElizaLogger`
 
 ## Defined in
 

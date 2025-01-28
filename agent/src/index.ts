@@ -3,7 +3,7 @@ import {
 	AgentRuntime,
 	CacheStore,
 	type Character,
-	elizaLogger,
+	logger,
 	type ICacheManager,
 	type IDatabaseAdapter,
 	type IDatabaseCacheAdapter,
@@ -15,7 +15,7 @@ import {
 	AgentRuntime,
 	CacheStore,
 	type Character,
-	elizaLogger,
+	logger,
 	type ICacheManager,
 	type IDatabaseAdapter,
 	type IDatabaseCacheAdapter,
@@ -33,11 +33,12 @@ import { initializeClients } from "./clients"
 import { initializeDatabase } from "./database"
 import { handlePluginImporting, importPlugins } from "./plugins"
 import { getTokenForProvider, logFetch } from "./utils"
+import { defaultCharacter } from "./defaultCharacter"
 const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
 const __dirname = path.dirname(__filename) // get the name of the directory
 
 export async function createAgent(character: Character, db: IDatabaseAdapter, cache: ICacheManager): Promise<AgentRuntime> {
-	const { plugins, verifiableInferenceAdapter } = await importPlugins(character, token);
+	const plugins = await importPlugins(character);
 	return new AgentRuntime({
 		databaseAdapter: db,
 		modelProvider: character.modelProvider,
@@ -92,15 +93,15 @@ async function startAgent(character: Character, directClient: DirectClient): Pro
         directClient.registerAgent(runtime);
 
         // report to console
-        elizaLogger.debug(`Started ${character.name} as ${runtime.agentId}`);
+        logger.debug(`Started ${character.name} as ${runtime.agentId}`);
 
         return runtime;
     } catch (error) {
-        elizaLogger.error(
+        logger.error(
             `Error starting agent for character ${character.name}:`,
             error
         );
-        elizaLogger.error(error);
+        logger.error(error);
         // if (db) {
         //     await db.close();
         // }
@@ -132,17 +133,22 @@ const startAgents = async () => {
 	let serverPort = Number.parseInt(settings.SERVER_PORT || "3000")
 	const characters = await loadAllCharacters()
 
+	if (characters.length === 0) {
+		// import default character
+		characters.push(defaultCharacter);
+	}
+
     try {
         for (const character of characters) {
             await startAgent(character, directClient);
         }
     } catch (error) {
-        elizaLogger.error("Error starting agents:", error);
+        logger.error("Error starting agents:", error);
     }
 
     // Find available port
     while (!(await checkPortAvailable(serverPort))) {
-        elizaLogger.warn(
+        logger.warn(
             `Port ${serverPort} is in use, trying ${serverPort + 1}`
         );
         serverPort++;
@@ -163,16 +169,16 @@ const startAgents = async () => {
     directClient.start(serverPort);
 
     if (serverPort !== Number.parseInt(settings.SERVER_PORT || "3000")) {
-        elizaLogger.log(`Server started on alternate port ${serverPort}`);
+        logger.log(`Server started on alternate port ${serverPort}`);
     }
 
-    elizaLogger.log(
+    logger.log(
         "Run `pnpm start:client` to start the client and visit the outputted URL (http://localhost:5173) to chat with your agents. When running multiple agents, use client with different port `SERVER_PORT=3001 pnpm start:client`"
     );
 };
 
 startAgents().catch((error) => {
-    elizaLogger.error("Unhandled error in startAgents:", error);
+    logger.error("Unhandled error in startAgents:", error);
     process.exit(1);
 });
 

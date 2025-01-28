@@ -1,6 +1,6 @@
 // TODO: Refactor to call the registered embedding model
 
-import elizaLogger from "./logger.ts";
+import logger from "./logger.ts";
 import { type IAgentRuntime } from "./types.ts";
 
 export function getEmbeddingZeroVector(): number[] {
@@ -25,7 +25,7 @@ export function getEmbeddingZeroVector(): number[] {
  */
 
 export async function embed(runtime: IAgentRuntime, input: string) {
-    elizaLogger.debug("Embedding request:", {
+    logger.debug("Embedding request:", {
         input: input?.slice(0, 50) + "...",
         inputType: typeof input,
         inputLength: input?.length,
@@ -35,7 +35,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
 
     // Validate input
     if (!input || typeof input !== "string" || input.trim().length === 0) {
-        elizaLogger.warn("Invalid embedding input:", {
+        logger.warn("Invalid embedding input:", {
             input,
             type: typeof input,
             length: input?.length,
@@ -65,7 +65,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
         try {
             // return await getLocalEmbedding(input);
         } catch (error) {
-            elizaLogger.warn(
+            logger.warn(
                 "Local embedding failed, falling back to remote",
                 error
             );
@@ -76,7 +76,7 @@ export async function embed(runtime: IAgentRuntime, input: string) {
         input: string
     ) {
         if (!input) {
-            elizaLogger.log("No input to retrieve cached embedding for");
+            logger.log("No input to retrieve cached embedding for");
             return null;
         }
 

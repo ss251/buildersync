@@ -4,7 +4,7 @@ import {
     type IAgentRuntime,
     // Memory,
     // State,
-    elizaLogger,
+    logger,
     // stringToUuid,
 } from "@elizaos/runtime";
 // import { sampleProvider } from "../providers/sampleProvider"; // TODO: Uncomment this line to use the sampleProvider
@@ -39,7 +39,7 @@ export class SampleService extends Service {
         // Start the periodic task
         this.startPeriodicTask();
         SampleService.isInitialized = true;
-        elizaLogger.info("SampleService initialized and started periodic task");
+        logger.info("SampleService initialized and started periodic task");
     }
 
     private static activeTaskCount = 0;
@@ -47,7 +47,7 @@ export class SampleService extends Service {
     private startPeriodicTask(): void {
         // Verify if a task is already active
         if (SampleService.activeTaskCount > 0) {
-            elizaLogger.warn(
+            logger.warn(
                 "SampleService: Periodic task already running, skipping"
             );
             return;
@@ -59,7 +59,7 @@ export class SampleService extends Service {
         }
 
         SampleService.activeTaskCount++;
-        elizaLogger.info(
+        logger.info(
             `SampleService: Starting periodic task (active tasks: ${SampleService.activeTaskCount})`
         );
 
@@ -74,7 +74,7 @@ export class SampleService extends Service {
 
     private async fetchSample(): Promise<void> {
         if (!this.runtime) {
-            elizaLogger.error("SampleService: Runtime not initialized");
+            logger.error("SampleService: Runtime not initialized");
             return;
         }
 
@@ -104,13 +104,13 @@ export class SampleService extends Service {
             // await sampleProvider.get(this.runtime, dummyMemory, dummyState);
 
             // hello world log example
-            elizaLogger.info("SampleService: Hello world");
+            logger.info("SampleService: Hello world");
 
-            elizaLogger.info(
+            logger.info(
                 "SampleService: Successfully fetched and processed sample"
             );
         } catch (error) {
-            elizaLogger.error("SampleService: Error fetching sample:", error);
+            logger.error("SampleService: Error fetching sample:", error);
         }
     }
 
@@ -120,7 +120,7 @@ export class SampleService extends Service {
             clearInterval(this.intervalId);
             this.intervalId = null;
             SampleService.activeTaskCount--;
-            elizaLogger.info(
+            logger.info(
                 `SampleService stopped (active tasks: ${SampleService.activeTaskCount})`
             );
         }

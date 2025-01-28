@@ -1,6 +1,6 @@
 import { type Context, Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import { type IAgentRuntime, elizaLogger } from "@elizaos/runtime";
+import { type IAgentRuntime, logger } from "@elizaos/runtime";
 import { MessageManager } from "./messageManager.ts";
 import { getOrCreateRecommenderInBe } from "./getOrCreateRecommenderInBe.ts";
 
@@ -14,7 +14,7 @@ export class TelegramClient {
     private options;
 
     constructor(runtime: IAgentRuntime, botToken: string) {
-        elizaLogger.log("📱 Constructing new TelegramClient...");
+        logger.log("📱 Constructing new TelegramClient...");
         this.options = {
             telegram: {
                 apiRoot: runtime.getSetting("TELEGRAM_API_ROOT") || process.env.TELEGRAM_API_ROOT || "https://api.telegram.org"
@@ -26,30 +26,30 @@ export class TelegramClient {
         this.backend = runtime.getSetting("BACKEND_URL");
         this.backendToken = runtime.getSetting("BACKEND_TOKEN");
         this.tgTrader = runtime.getSetting("TG_TRADER"); // boolean To Be added to the settings
-        elizaLogger.log("✅ TelegramClient constructor completed");
+        logger.log("✅ TelegramClient constructor completed");
     }
 
     public async start(): Promise<void> {
-        elizaLogger.log("🚀 Starting Telegram bot...");
+        logger.log("🚀 Starting Telegram bot...");
         try {
             await this.initializeBot();
             this.setupMessageHandlers();
             this.setupShutdownHandlers();
         } catch (error) {
-            elizaLogger.error("❌ Failed to launch Telegram bot:", error);
+            logger.error("❌ Failed to launch Telegram bot:", error);
             throw error;
         }
     }
 
     private async initializeBot(): Promise<void> {
         this.bot.launch({ dropPendingUpdates: true });
-        elizaLogger.log(
+        logger.log(
             "✨ Telegram bot successfully launched and is running!"
         );
 
         const botInfo = await this.bot.telegram.getMe();
         this.bot.botInfo = botInfo;
-        elizaLogger.success(`Bot username: @${botInfo.username}`);
+        logger.success(`Bot username: @${botInfo.username}`);
 
         this.messageManager.bot = this.bot;
     }
@@ -68,12 +68,12 @@ export class TelegramClient {
         const currentGroupId = ctx.chat.id.toString();
 
         if (!allowedGroups.includes(currentGroupId)) {
-            elizaLogger.info(`Unauthorized group detected: ${currentGroupId}`);
+            logger.info(`Unauthorized group detected: ${currentGroupId}`);
             try {
                 await ctx.reply("Not authorized. Leaving.");
                 await ctx.leaveChat();
             } catch (error) {
-                elizaLogger.error(
+                logger.error(
                     `Error leaving unauthorized group ${currentGroupId}:`,
                     error
                 );
@@ -85,7 +85,7 @@ export class TelegramClient {
     }
 
     private setupMessageHandlers(): void {
-        elizaLogger.log("Setting up message handler...");
+        logger.log("Setting up message handler...");
 
         this.bot.on(message("new_chat_members"), async (ctx) => {
             try {
@@ -98,7 +98,7 @@ export class TelegramClient {
                     return;
                 }
             } catch (error) {
-                elizaLogger.error("Error handling new chat members:", error);
+                logger.error("Error handling new chat members:", error);
             }
         });
 
@@ -114,7 +114,7 @@ export class TelegramClient {
                     const username =
                         ctx.from?.username || ctx.from?.first_name || "Unknown";
                     if (!userId) {
-                        elizaLogger.warn(
+                        logger.warn(
                             "Received message from a user without an ID."
                         );
                         return;
@@ -127,7 +127,7 @@ export class TelegramClient {
                             this.backend
                         );
                     } catch (error) {
-                        elizaLogger.error(
+                        logger.error(
                             "Error getting or creating recommender in backend",
                             error
                         );
@@ -136,7 +136,7 @@ export class TelegramClient {
 
                 await this.messageManager.handleMessage(ctx);
             } catch (error) {
-                elizaLogger.error("❌ Error handling message:", error);
+                logger.error("❌ Error handling message:", error);
                 // Don't try to reply if we've left the group or been kicked
                 if (error?.response?.error_code !== 403) {
                     try {
@@ -144,7 +144,7 @@ export class TelegramClient {
                             "An error occurred while processing your message."
                         );
                     } catch (replyError) {
-                        elizaLogger.error(
+                        logger.error(
                             "Failed to send error message:",
                             replyError
                         );
@@ -154,35 +154,35 @@ export class TelegramClient {
         });
 
         this.bot.on("photo", (ctx) => {
-            elizaLogger.log(
+            logger.log(
                 "📸 Received photo message with caption:",
                 ctx.message.caption
             );
         });
 
         this.bot.on("document", (ctx) => {
-            elizaLogger.log(
+            logger.log(
                 "📎 Received document message:",
                 ctx.message.document.file_name
             );
         });
 
         this.bot.catch((err, ctx) => {
-            elizaLogger.error(`❌ Telegram Error for ${ctx.updateType}:`, err);
+            logger.error(`❌ Telegram Error for ${ctx.updateType}:`, err);
             ctx.reply("An unexpected error occurred. Please try again later.");
         });
     }
 
     private setupShutdownHandlers(): void {
         const shutdownHandler = async (signal: string) => {
-            elizaLogger.log(
+            logger.log(
                 `⚠️ Received ${signal}. Shutting down Telegram bot gracefully...`
             );
             try {
                 await this.stop();
-                elizaLogger.log("🛑 Telegram bot stopped gracefully");
+                logger.log("🛑 Telegram bot stopped gracefully");
             } catch (error) {
-                elizaLogger.error(
+                logger.error(
                     "❌ Error during Telegram bot shutdown:",
                     error
                 );
@@ -196,9 +196,9 @@ export class TelegramClient {
     }
 
     public async stop(): Promise<void> {
-        elizaLogger.log("Stopping Telegram bot...");
+        logger.log("Stopping Telegram bot...");
         //await 
             this.bot.stop();
-        elizaLogger.log("Telegram bot stopped");
+        logger.log("Telegram bot stopped");
     }
 }

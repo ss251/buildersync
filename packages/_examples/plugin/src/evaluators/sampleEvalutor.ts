@@ -3,7 +3,7 @@ import {
     type IAgentRuntime,
     type Memory,
     type State,
-    elizaLogger,
+    logger,
 } from "@elizaos/runtime";
 
 export const sampleEvaluator: Evaluator = {
@@ -28,17 +28,17 @@ export const sampleEvaluator: Evaluator = {
     ],
     handler: async (runtime: IAgentRuntime, memory: Memory, state: State) => {
         // Evaluation logic for the evaluator
-        elizaLogger.log("Evaluating data in sampleEvaluator...");
+        logger.log("Evaluating data in sampleEvaluator...");
 
         // Example evaluation logic
         if (memory.content?.includes("important")) {
-            elizaLogger.log("Important content found in memory.");
+            logger.log("Important content found in memory.");
             return {
                 score: 1,
                 reason: "Memory contains important content.",
             };
         }
-        elizaLogger.log("No important content found in memory.");
+        logger.log("No important content found in memory.");
         return {
             score: 0,
             reason: "Memory does not contain important content.",

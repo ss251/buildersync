@@ -1,6 +1,6 @@
-# Variable: elizaLogger
+# Variable: logger
 
-> `const` **elizaLogger**: `ElizaLogger`
+> `const` **logger**: `ElizaLogger`
 
 ## Defined in
 

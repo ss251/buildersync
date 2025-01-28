@@ -207,8 +207,8 @@ const typedocSidebar = {
                 },
                 {
                     type: "doc",
-                    id: "api/variables/elizaLogger",
-                    label: "elizaLogger",
+                    id: "api/variables/logger",
+                    label: "logger",
                 },
                 {
                     type: "doc",

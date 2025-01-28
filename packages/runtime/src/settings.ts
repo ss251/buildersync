@@ -1,9 +1,9 @@
 import { config } from "dotenv";
 import fs from "fs";
 import path from "path";
-import elizaLogger from "./logger.ts";
+import logger from "./logger.ts";
 
-elizaLogger.info("Loading embedding settings:", {
+logger.info("Loading embedding settings:", {
     USE_OPENAI_EMBEDDING: process.env.USE_OPENAI_EMBEDDING,
     USE_OLLAMA_EMBEDDING: process.env.USE_OLLAMA_EMBEDDING,
     OLLAMA_EMBEDDING_MODEL:
@@ -11,7 +11,7 @@ elizaLogger.info("Loading embedding settings:", {
 });
 
 // Add this logging block
-elizaLogger.info("Loading character settings:", {
+logger.info("Loading character settings:", {
     CHARACTER_PATH: process.env.CHARACTER_PATH,
     ARGV: process.argv,
     CHARACTER_ARG: process.argv.find((arg) => arg.startsWith("--character=")),
@@ -93,7 +93,7 @@ export function loadEnvConfig(): Settings {
     const result = config(envPath ? { path: envPath } : {});
 
     if (!result.error) {
-        elizaLogger.log(`Loaded .env file from: ${envPath}`);
+        logger.log(`Loaded .env file from: ${envPath}`);
     }
 
     // Parse namespaced settings
@@ -138,7 +138,7 @@ export function hasEnvVariable(key: string): boolean {
 // Initialize settings based on environment
 export const settings = isBrowser() ? environmentSettings : loadEnvConfig();
 
-elizaLogger.info("Parsed settings:", {
+logger.info("Parsed settings:", {
     USE_OPENAI_EMBEDDING: settings.USE_OPENAI_EMBEDDING,
     USE_OPENAI_EMBEDDING_TYPE: typeof settings.USE_OPENAI_EMBEDDING,
     USE_OLLAMA_EMBEDDING: settings.USE_OLLAMA_EMBEDDING,

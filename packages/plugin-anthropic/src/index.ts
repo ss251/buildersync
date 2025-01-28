@@ -43,7 +43,8 @@ export const anthropicGenerateText = createFunction({
   },
 });
 
-export default function registerPlugin (runtime: IAgentRuntime  ) {
+// temporary measure
+export default function registerPlugin (runtime: IAgentRuntime) {
   runtime.registerFunction(anthropicGenerateText.name, anthropicGenerateText.handler);
 }
 
@@ -239,7 +240,7 @@ V1 settings
 //         const response = await fetch(fullUrl, requestOptions);
 
 //         if (!response.ok) {
-//             elizaLogger.error("API Response:", await response.text()); // Debug log
+//             logger.error("API Response:", await response.text()); // Debug log
 //             throw new Error(
 //                 `Embedding API Error: ${response.status} ${response.statusText}`
 //             );
@@ -252,7 +253,7 @@ V1 settings
 //         const data: EmbeddingResponse = await response.json();
 //         return data?.data?.[0].embedding;
 //     } catch (e) {
-//         elizaLogger.error("Full error details:", e);
+//         logger.error("Full error details:", e);
 //         throw e;
 //     }
 // }
@@ -326,7 +327,7 @@ V1 settings
 //   provider: string
 // ): Promise<never> => {
 //   const responseText = await response.text();
-//   elizaLogger.error(
+//   logger.error(
 //       `${provider} API error:`,
 //       response.status,
 //       "-",
@@ -542,32 +543,32 @@ V1 settings
         //         ModelProviderName.OLLAMA
         //     ) {
         //         this.provider = new LocalImageProvider();
-        //         elizaLogger.debug("Using local provider for vision model");
+        //         logger.debug("Using local provider for vision model");
         //     } else if (
         //         this.runtime.imageVisionModelProvider ===
         //         ModelProviderName.ANTHROPIC
         //     ) {
         //         this.provider = new AnthropicImageProvider(this.runtime);
-        //         elizaLogger.debug("Using anthropic for vision model");
+        //         logger.debug("Using anthropic for vision model");
         //     } else if (
         //         this.runtime.imageVisionModelProvider ===
         //         ModelProviderName.GOOGLE
         //     ) {
         //         this.provider = new GoogleImageProvider(this.runtime);
-        //         elizaLogger.debug("Using google for vision model");
+        //         logger.debug("Using google for vision model");
         //     } else if (
         //         this.runtime.imageVisionModelProvider ===
         //         ModelProviderName.OPENAI
         //     ) {
         //         this.provider = new OpenAIImageProvider(this.runtime);
-        //         elizaLogger.debug("Using openai for vision model");
+        //         logger.debug("Using openai for vision model");
         //     } else if (
         //         this.runtime.imageVisionModelProvider === ModelProviderName.GROQ
         //     ) {
         //         this.provider = new GroqImageProvider(this.runtime);
-        //         elizaLogger.debug("Using Groq for vision model");
+        //         logger.debug("Using Groq for vision model");
         //     } else {
-        //         elizaLogger.warn(
+        //         logger.warn(
         //             `Unsupported image vision model provider: ${this.runtime.imageVisionModelProvider}. ` +
         //             `Please use one of the following: ${availableModels}. ` +
         //             `Update the 'imageVisionModelProvider' field in the character file.`
@@ -578,18 +579,18 @@ V1 settings
         //     model === models[ModelProviderName.LLAMALOCAL] ||
         //     model === models[ModelProviderName.OLLAMA]
         // ) {
-        //     elizaLogger.debug("Using local provider for vision model");
+        //     logger.debug("Using local provider for vision model");
         // } else if (model === models[ModelProviderName.ANTHROPIC]) {
         //     this.provider = new AnthropicImageProvider(this.runtime);
-        //     elizaLogger.debug("Using anthropic for vision model");
+        //     logger.debug("Using anthropic for vision model");
         // } else if (model === models[ModelProviderName.GOOGLE]) {
         //     this.provider = new GoogleImageProvider(this.runtime);
-        //     elizaLogger.debug("Using google for vision model");
+        //     logger.debug("Using google for vision model");
         // } else if (model === models[ModelProviderName.GROQ]) {
         //     this.provider = new GroqImageProvider(this.runtime);
-        //     elizaLogger.debug("Using groq for vision model");
+        //     logger.debug("Using groq for vision model");
         // } else {
-        //     elizaLogger.debug("Using default openai for vision model");
+        //     logger.debug("Using default openai for vision model");
         //     this.provider = new OpenAIImageProvider(this.runtime);
         // })
 
@@ -600,7 +601,7 @@ V1 settings
 
 // const modelSettings = getImageModelSettings(runtime.imageModelProvider);
 // const model = modelSettings.name;
-// elizaLogger.info("Generating image with options:", {
+// logger.info("Generating image with options:", {
 //     imageModelProvider: model,
 // });
 
@@ -703,7 +704,7 @@ V1 settings
 //         const base64s = await Promise.all(
 //             togetherResponse.data.map(async (image) => {
 //                 if (!image.url) {
-//                     elizaLogger.error("Missing URL in image data:", image);
+//                     logger.error("Missing URL in image data:", image);
 //                     throw new Error("Missing URL in Together AI response");
 //                 }
 
@@ -729,7 +730,7 @@ V1 settings
 //             throw new Error("No images generated by Together AI");
 //         }
 
-//         elizaLogger.debug(`Generated ${base64s.length} images`);
+//         logger.debug(`Generated ${base64s.length} images`);
 //         return { success: true, data: base64s };
 //     } else if (runtime.imageModelProvider === ModelProviderName.FAL) {
 //         fal.config({
@@ -769,7 +770,7 @@ V1 settings
 //             logs: true,
 //             onQueueUpdate: (update) => {
 //                 if (update.status === "IN_PROGRESS") {
-//                     elizaLogger.info(update.logs.map((log) => log.message));
+//                     logger.info(update.logs.map((log) => log.message));
 //                 }
 //             },
 //         });
@@ -960,42 +961,15 @@ V1 settings
  
 // old generateText code
 
-// elizaLogger.info("Generating text with options:", {
+// logger.info("Generating text with options:", {
 //     modelProvider: runtime.modelProvider,
 //     model: modelClass,
 //     verifiableInference,
 // });
-// elizaLogger.log("Using provider:", runtime.modelProvider);
-// // If verifiable inference is requested and adapter is provided, use it
-// if (verifiableInference && runtime.verifiableInferenceAdapter) {
-//     elizaLogger.log(
-//         "Using verifiable inference adapter:",
-//         runtime.verifiableInferenceAdapter
-//     );
-//     try {
-//         const result: VerifiableInferenceResult =
-//             await runtime.verifiableInferenceAdapter.generateText(
-//                 context,
-//                 modelClass,
-//                 verifiableInferenceOptions
-//             );
-//         elizaLogger.log("Verifiable inference result:", result);
-//         // Verify the proof
-//         const isValid =
-//             await runtime.verifiableInferenceAdapter.verifyProof(result);
-//         if (!isValid) {
-//             throw new Error("Failed to verify inference proof");
-//         }
-
-//         return result.text;
-//     } catch (error) {
-//         elizaLogger.error("Error in verifiable inference:", error);
-//         throw error;
-//     }
-// }
+// logger.log("Using provider:", runtime.modelProvider);
 
 // const provider = runtime.modelProvider;
-// elizaLogger.debug("Provider settings:", {
+// logger.debug("Provider settings:", {
 //     provider,
 //     hasRuntime: !!runtime,
 //     runtimeSettings: {
@@ -1080,7 +1054,7 @@ V1 settings
 //         break;
 // }
 
-// elizaLogger.info("Selected model:", model);
+// logger.info("Selected model:", model);
 
 // const modelConfiguration = runtime.character?.settings?.modelConfig;
 // const temperature =
@@ -1102,7 +1076,7 @@ V1 settings
 // const apiKey = runtime.token;
 
 // try {
-//     elizaLogger.debug(
+//     logger.debug(
 //         `Trimming context to max length of ${max_context_length} tokens.`
 //     );
 
@@ -1111,7 +1085,7 @@ V1 settings
 //     let response: string;
 
 //     const _stop = stop || modelSettings.stop;
-//     elizaLogger.debug(
+//     logger.debug(
 //         `Using provider: ${provider}, model: ${model}, temperature: ${temperature}, max response length: ${max_response_length}`
 //     );
 
@@ -1126,13 +1100,13 @@ V1 settings
 //         case ModelProviderName.TOGETHER:
 //         case ModelProviderName.NINETEEN_AI:
 //         case ModelProviderName.AKASH_CHAT_API: {
-//             elizaLogger.debug(
+//             logger.debug(
 //                 "Initializing OpenAI model with Cloudflare check"
 //             );
 //             const baseURL =
 //                 getCloudflareGatewayBaseURL(runtime, "openai") || endpoint;
 
-//             //elizaLogger.debug("OpenAI baseURL result:", { baseURL });
+//             //logger.debug("OpenAI baseURL result:", { baseURL });
 //             const openai = createOpenAI({
 //                 apiKey,
 //                 baseURL,
@@ -1162,7 +1136,7 @@ V1 settings
 //         }
 
 //         case ModelProviderName.ETERNALAI: {
-//             elizaLogger.debug("Initializing EternalAI model.");
+//             logger.debug("Initializing EternalAI model.");
 //             const openai = createOpenAI({
 //                 apiKey,
 //                 baseURL: endpoint,
@@ -1191,20 +1165,20 @@ V1 settings
 //                             runtime.getSetting("ETERNALAI_LOG")
 //                         )
 //                     ) {
-//                         elizaLogger.info(
+//                         logger.info(
 //                             "Request data: ",
 //                             JSON.stringify(options, null, 2)
 //                         );
 //                         const clonedResponse = fetching.clone();
 //                         try {
 //                             clonedResponse.json().then((data) => {
-//                                 elizaLogger.info(
+//                                 logger.info(
 //                                     "Response data: ",
 //                                     JSON.stringify(data, null, 2)
 //                                 );
 //                             });
 //                         } catch (e) {
-//                             elizaLogger.debug(e);
+//                             logger.debug(e);
 //                         }
 //                     }
 //                     return fetching;
@@ -1219,18 +1193,18 @@ V1 settings
 //                 const on_chain_system_prompt =
 //                     await getOnChainEternalAISystemPrompt(runtime);
 //                 if (!on_chain_system_prompt) {
-//                     elizaLogger.error(
+//                     logger.error(
 //                         new Error("invalid on_chain_system_prompt")
 //                     );
 //                 } else {
 //                     system_prompt = on_chain_system_prompt;
-//                     elizaLogger.info(
+//                     logger.info(
 //                         "new on-chain system prompt",
 //                         system_prompt
 //                     );
 //                 }
 //             } catch (e) {
-//                 elizaLogger.error(e);
+//                 logger.error(e);
 //             }
 
 //             const { text: openaiResponse } = await aiGenerateText({
@@ -1244,7 +1218,7 @@ V1 settings
 //             });
 
 //             response = openaiResponse;
-//             elizaLogger.debug("Received response from EternalAI model.");
+//             logger.debug("Received response from EternalAI model.");
 //             break;
 //         }
 
@@ -1272,7 +1246,7 @@ V1 settings
 //             });
 
 //             response = googleResponse;
-//             elizaLogger.debug("Received response from Google model.");
+//             logger.debug("Received response from Google model.");
 //             break;
 //         }
 
@@ -1293,18 +1267,18 @@ V1 settings
 //             });
 
 //             response = mistralResponse;
-//             elizaLogger.debug("Received response from Mistral model.");
+//             logger.debug("Received response from Mistral model.");
 //             break;
 //         }
 
 //         case ModelProviderName.ANTHROPIC: {
-//             elizaLogger.debug(
+//             logger.debug(
 //                 "Initializing Anthropic model with Cloudflare check"
 //             );
 //             const baseURL =
 //                 getCloudflareGatewayBaseURL(runtime, "anthropic") ||
 //                 "https://api.anthropic.com/v1";
-//             elizaLogger.debug("Anthropic baseURL result:", { baseURL });
+//             logger.debug("Anthropic baseURL result:", { baseURL });
 
 //             const anthropic = createAnthropic({
 //                 apiKey,
@@ -1329,12 +1303,12 @@ V1 settings
 //             });
 
 //             response = anthropicResponse;
-//             elizaLogger.debug("Received response from Anthropic model.");
+//             logger.debug("Received response from Anthropic model.");
 //             break;
 //         }
 
 //         case ModelProviderName.CLAUDE_VERTEX: {
-//             elizaLogger.debug("Initializing Claude Vertex model.");
+//             logger.debug("Initializing Claude Vertex model.");
 
 //             const anthropic = createAnthropic({
 //                 apiKey,
@@ -1359,14 +1333,14 @@ V1 settings
 //             });
 
 //             response = anthropicResponse;
-//             elizaLogger.debug(
+//             logger.debug(
 //                 "Received response from Claude Vertex model."
 //             );
 //             break;
 //         }
 
 //         case ModelProviderName.GROK: {
-//             elizaLogger.debug("Initializing Grok model.");
+//             logger.debug("Initializing Grok model.");
 //             const grok = createOpenAI({
 //                 apiKey,
 //                 baseURL: endpoint,
@@ -1393,16 +1367,16 @@ V1 settings
 //             });
 
 //             response = grokResponse;
-//             elizaLogger.debug("Received response from Grok model.");
+//             logger.debug("Received response from Grok model.");
 //             break;
 //         }
 
 //         case ModelProviderName.GROQ: {
-//             elizaLogger.debug(
+//             logger.debug(
 //                 "Initializing Groq model with Cloudflare check"
 //             );
 //             const baseURL = getCloudflareGatewayBaseURL(runtime, "groq");
-//             elizaLogger.debug("Groq baseURL result:", { baseURL });
+//             logger.debug("Groq baseURL result:", { baseURL });
 //             const groq = createGroq({
 //                 apiKey,
 //                 fetch: runtime.fetch,
@@ -1427,12 +1401,12 @@ V1 settings
 //             });
 
 //             response = groqResponse;
-//             elizaLogger.debug("Received response from Groq model.");
+//             logger.debug("Received response from Groq model.");
 //             break;
 //         }
 
 //         case ModelProviderName.LLAMALOCAL: {
-//             elizaLogger.debug(
+//             logger.debug(
 //                 "Using local Llama model for text completion."
 //             );
 //             const textGenerationService =
@@ -1452,12 +1426,12 @@ V1 settings
 //                 presence_penalty,
 //                 max_response_length
 //             );
-//             elizaLogger.debug("Received response from local Llama model.");
+//             logger.debug("Received response from local Llama model.");
 //             break;
 //         }
 
 //         case ModelProviderName.REDPILL: {
-//             elizaLogger.debug("Initializing RedPill model.");
+//             logger.debug("Initializing RedPill model.");
 //             const serverUrl = getEndpoint(provider);
 //             const openai = createOpenAI({
 //                 apiKey,
@@ -1483,12 +1457,12 @@ V1 settings
 //             });
 
 //             response = redpillResponse;
-//             elizaLogger.debug("Received response from redpill model.");
+//             logger.debug("Received response from redpill model.");
 //             break;
 //         }
 
 //         case ModelProviderName.OPENROUTER: {
-//             elizaLogger.debug("Initializing OpenRouter model.");
+//             logger.debug("Initializing OpenRouter model.");
 //             const serverUrl = getEndpoint(provider);
 //             const openrouter = createOpenAI({
 //                 apiKey,
@@ -1514,13 +1488,13 @@ V1 settings
 //             });
 
 //             response = openrouterResponse;
-//             elizaLogger.debug("Received response from OpenRouter model.");
+//             logger.debug("Received response from OpenRouter model.");
 //             break;
 //         }
 
 //         case ModelProviderName.OLLAMA:
 //             {
-//                 elizaLogger.debug("Initializing Ollama model.");
+//                 logger.debug("Initializing Ollama model.");
 
 //                 const ollamaProvider = createOllama({
 //                     baseURL: getEndpoint(provider) + "/api",
@@ -1528,7 +1502,7 @@ V1 settings
 //                 });
 //                 const ollama = ollamaProvider(model);
 
-//                 elizaLogger.debug("****** MODEL\n", model);
+//                 logger.debug("****** MODEL\n", model);
 
 //                 const { text: ollamaResponse } = await aiGenerateText({
 //                     model: ollama,
@@ -1545,11 +1519,11 @@ V1 settings
 
 //                 response = ollamaResponse;
 //             }
-//             elizaLogger.debug("Received response from Ollama model.");
+//             logger.debug("Received response from Ollama model.");
 //             break;
 
 //         case ModelProviderName.HEURIST: {
-//             elizaLogger.debug("Initializing Heurist model.");
+//             logger.debug("Initializing Heurist model.");
 //             const heurist = createOpenAI({
 //                 apiKey: apiKey,
 //                 baseURL: endpoint,
@@ -1575,11 +1549,11 @@ V1 settings
 //             });
 
 //             response = heuristResponse;
-//             elizaLogger.debug("Received response from Heurist model.");
+//             logger.debug("Received response from Heurist model.");
 //             break;
 //         }
 //         case ModelProviderName.GAIANET: {
-//             elizaLogger.debug("Initializing GAIANET model.");
+//             logger.debug("Initializing GAIANET model.");
 
 //             var baseURL = getEndpoint(provider);
 //             if (!baseURL) {
@@ -1602,7 +1576,7 @@ V1 settings
 //                 }
 //             }
 
-//             elizaLogger.debug("Using GAIANET model with baseURL:", baseURL);
+//             logger.debug("Using GAIANET model with baseURL:", baseURL);
 
 //             const openai = createOpenAI({
 //                 apiKey,
@@ -1628,12 +1602,12 @@ V1 settings
 //             });
 
 //             response = openaiResponse;
-//             elizaLogger.debug("Received response from GAIANET model.");
+//             logger.debug("Received response from GAIANET model.");
 //             break;
 //         }
 
 //         case ModelProviderName.ATOMA: {
-//             elizaLogger.debug("Initializing Atoma model.");
+//             logger.debug("Initializing Atoma model.");
 //             const atoma = createOpenAI({
 //                 apiKey,
 //                 baseURL: endpoint,
@@ -1658,12 +1632,12 @@ V1 settings
 //             });
 
 //             response = atomaResponse;
-//             elizaLogger.debug("Received response from Atoma model.");
+//             logger.debug("Received response from Atoma model.");
 //             break;
 //         }
 
 //         case ModelProviderName.GALADRIEL: {
-//             elizaLogger.debug("Initializing Galadriel model.");
+//             logger.debug("Initializing Galadriel model.");
 //             const headers = {};
 //             const fineTuneApiKey = runtime.getSetting(
 //                 "GALADRIEL_FINE_TUNE_API_KEY"
@@ -1696,12 +1670,12 @@ V1 settings
 //             });
 
 //             response = galadrielResponse;
-//             elizaLogger.debug("Received response from Galadriel model.");
+//             logger.debug("Received response from Galadriel model.");
 //             break;
 //         }
 
 //         case ModelProviderName.INFERA: {
-//             elizaLogger.debug("Initializing Infera model.");
+//             logger.debug("Initializing Infera model.");
 
 //             const apiKey = settings.INFERA_API_KEY || runtime.token;
 
@@ -1727,12 +1701,12 @@ V1 settings
 //                 presencePenalty: presence_penalty,
 //             });
 //             response = inferaResponse;
-//             elizaLogger.debug("Received response from Infera model.");
+//             logger.debug("Received response from Infera model.");
 //             break;
 //         }
 
 //         case ModelProviderName.VENICE: {
-//             elizaLogger.debug("Initializing Venice model.");
+//             logger.debug("Initializing Venice model.");
 //             const venice = createOpenAI({
 //                 apiKey: apiKey,
 //                 baseURL: endpoint,
@@ -1753,12 +1727,12 @@ V1 settings
 //             });
 
 //             response = veniceResponse;
-//             elizaLogger.debug("Received response from Venice model.");
+//             logger.debug("Received response from Venice model.");
 //             break;
 //         }
 
 //         case ModelProviderName.NVIDIA: {
-//             elizaLogger.debug("Initializing NVIDIA model.");
+//             logger.debug("Initializing NVIDIA model.");
 //             const nvidia = createOpenAI({
 //                 apiKey: apiKey,
 //                 baseURL: endpoint,
@@ -1779,12 +1753,12 @@ V1 settings
 //             });
 
 //             response = nvidiaResponse;
-//             elizaLogger.debug("Received response from NVIDIA model.");
+//             logger.debug("Received response from NVIDIA model.");
 //             break;
 //         }
 
 //         case ModelProviderName.DEEPSEEK: {
-//             elizaLogger.debug("Initializing Deepseek model.");
+//             logger.debug("Initializing Deepseek model.");
 //             const serverUrl = models[provider].endpoint;
 //             const deepseek = createOpenAI({
 //                 apiKey,
@@ -1810,12 +1784,12 @@ V1 settings
 //             });
 
 //             response = deepseekResponse;
-//             elizaLogger.debug("Received response from Deepseek model.");
+//             logger.debug("Received response from Deepseek model.");
 //             break;
 //         }
 
 //         case ModelProviderName.LIVEPEER: {
-//             elizaLogger.debug("Initializing Livepeer model.");
+//             logger.debug("Initializing Livepeer model.");
 
 //             if (!endpoint) {
 //                 throw new Error("Livepeer Gateway URL is not defined");
@@ -1867,7 +1841,7 @@ V1 settings
 //                 /<\|start_header_id\|>assistant<\|end_header_id\|>\n\n/,
 //                 ""
 //             );
-//             elizaLogger.debug(
+//             logger.debug(
 //                 "Successfully received response from Livepeer model"
 //             );
 //             break;
@@ -1875,7 +1849,7 @@ V1 settings
 
 //         default: {
 //             const errorMessage = `Unsupported provider: ${provider}`;
-//             elizaLogger.error(errorMessage);
+//             logger.error(errorMessage);
 //             throw new Error(errorMessage);
 //         }
 //     }

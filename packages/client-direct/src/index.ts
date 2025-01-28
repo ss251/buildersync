@@ -5,7 +5,7 @@ import multer from "multer";
 import { z } from "zod";
 import {
     type AgentRuntime,
-    elizaLogger,
+    logger,
     messageCompletionFooter,
     generateCaption,
     generateImage,
@@ -117,7 +117,7 @@ export class DirectClient {
     public jsonToCharacter: Function; // Store jsonToCharacter functor
 
     constructor() {
-        elizaLogger.log("DirectClient constructor");
+        logger.log("DirectClient constructor");
         this.app = express();
         this.app.use(cors());
         this.agents = new Map();
@@ -517,7 +517,7 @@ export class DirectClient {
                 try {
                     hfOut = hyperfiOutSchema.parse(response.object);
                 } catch {
-                    elizaLogger.error(
+                    logger.error(
                         "cant serialize response",
                         response.object
                     );
@@ -661,13 +661,13 @@ export class DirectClient {
                     assetId
                 );
 
-                elizaLogger.log("Download directory:", downloadDir);
+                logger.log("Download directory:", downloadDir);
 
                 try {
-                    elizaLogger.log("Creating directory...");
+                    logger.log("Creating directory...");
                     await fs.promises.mkdir(downloadDir, { recursive: true });
 
-                    elizaLogger.log("Fetching file...");
+                    logger.log("Fetching file...");
                     const fileResponse = await fetch(
                         `https://api.bageldb.ai/api/v1/asset/${assetId}/download`,
                         {
@@ -683,7 +683,7 @@ export class DirectClient {
                         );
                     }
 
-                    elizaLogger.log("Response headers:", fileResponse.headers);
+                    logger.log("Response headers:", fileResponse.headers);
 
                     const fileName =
                         fileResponse.headers
@@ -691,19 +691,19 @@ export class DirectClient {
                             ?.split("filename=")[1]
                             ?.replace(/"/g, /* " */ "") || "default_name.txt";
 
-                    elizaLogger.log("Saving as:", fileName);
+                    logger.log("Saving as:", fileName);
 
                     const arrayBuffer = await fileResponse.arrayBuffer();
                     const buffer = Buffer.from(arrayBuffer);
 
                     const filePath = path.join(downloadDir, fileName);
-                    elizaLogger.log("Full file path:", filePath);
+                    logger.log("Full file path:", filePath);
 
                     await fs.promises.writeFile(filePath, buffer);
 
                     // Verify file was written
                     const stats = await fs.promises.stat(filePath);
-                    elizaLogger.log(
+                    logger.log(
                         "File written successfully. Size:",
                         stats.size,
                         "bytes"
@@ -718,7 +718,7 @@ export class DirectClient {
                         fileSize: stats.size,
                     });
                 } catch (error) {
-                    elizaLogger.error("Detailed error:", error);
+                    logger.error("Detailed error:", error);
                     res.status(500).json({
                         error: "Failed to download files from BagelDB",
                         details: error.message,
@@ -892,7 +892,7 @@ export class DirectClient {
 
                 res.send(Buffer.from(audioBuffer));
             } catch (error) {
-                elizaLogger.error(
+                logger.error(
                     "Error processing message or generating speech:",
                     error
                 );
@@ -965,7 +965,7 @@ export class DirectClient {
 
                 res.send(Buffer.from(audioBuffer));
             } catch (error) {
-                elizaLogger.error(
+                logger.error(
                     "Error processing message or generating speech:",
                     error
                 );
@@ -990,22 +990,22 @@ export class DirectClient {
 
     public start(port: number) {
         this.server = this.app.listen(port, () => {
-            elizaLogger.success(
+            logger.success(
                 `REST API bound to 0.0.0.0:${port}. If running locally, access it at http://localhost:${port}.`
             );
         });
 
         // Handle graceful shutdown
         const gracefulShutdown = () => {
-            elizaLogger.log("Received shutdown signal, closing server...");
+            logger.log("Received shutdown signal, closing server...");
             this.server.close(() => {
-                elizaLogger.success("Server closed successfully");
+                logger.success("Server closed successfully");
                 process.exit(0);
             });
 
             // Force close after 5 seconds if server hasn't closed
             setTimeout(() => {
-                elizaLogger.error(
+                logger.error(
                     "Could not close connections in time, forcefully shutting down"
                 );
                 process.exit(1);
@@ -1020,7 +1020,7 @@ export class DirectClient {
     public stop() {
         if (this.server) {
             this.server.close(() => {
-                elizaLogger.success("Server stopped");
+                logger.success("Server stopped");
             });
         }
     }
@@ -1028,7 +1028,7 @@ export class DirectClient {
 
 export const DirectClientInterface: Client = {
     start: async (_runtime: IAgentRuntime) => {
-        elizaLogger.log("DirectClientInterface start");
+        logger.log("DirectClientInterface start");
         const client = new DirectClient();
         const serverPort = Number.parseInt(settings.SERVER_PORT || "3000");
         client.start(serverPort);

@@ -1,16 +1,16 @@
 import path from "node:path";
 import { fileURLToPath } from "url";
 import { FlagEmbedding, EmbeddingModel } from "fastembed";
-import elizaLogger from "@elizaos/runtime/src/logger";
+import logger from "@elizaos/runtime/src/logger";
 
 async function getLocalEmbedding(input: string): Promise<number[]> {
-    elizaLogger.debug("DEBUG - Inside getLocalEmbedding function");
+    logger.debug("DEBUG - Inside getLocalEmbedding function");
 
     try {
         const embeddingManager = LocalEmbeddingModelManager.getInstance();
         return await embeddingManager.generateEmbedding(input);
     } catch (error) {
-        elizaLogger.error("Local embedding failed:", error);
+        logger.error("Local embedding failed:", error);
         throw error;
     }
 // }
@@ -90,7 +90,7 @@ class LocalEmbeddingModelManager {
                 fs.mkdirSync(cacheDir, { recursive: true });
             }
 
-            elizaLogger.debug("Initializing BGE embedding model...");
+            logger.debug("Initializing BGE embedding model...");
 
             this.model = await FlagEmbedding.init({
                 cacheDir: cacheDir,
@@ -98,9 +98,9 @@ class LocalEmbeddingModelManager {
                 maxLength: 512,
             });
 
-            elizaLogger.debug("BGE model initialized successfully");
+            logger.debug("BGE model initialized successfully");
         } catch (error) {
-            elizaLogger.error("Failed to initialize BGE model:", error);
+            logger.error("Failed to initialize BGE model:", error);
             throw error;
         }
     }
@@ -118,7 +118,7 @@ class LocalEmbeddingModelManager {
             // Let fastembed handle tokenization internally
             const embedding = await this.model.queryEmbed(input);
             // Debug the raw embedding - uncomment if debugging embeddings
-            // elizaLogger.debug("Raw embedding from BGE:", {
+            // logger.debug("Raw embedding from BGE:", {
             //     type: typeof embedding,
             //     isArray: Array.isArray(embedding),
             //     dimensions: Array.isArray(embedding)
@@ -130,7 +130,7 @@ class LocalEmbeddingModelManager {
             // });
             return this.processEmbedding(embedding);
         } catch (error) {
-            elizaLogger.error("Embedding generation failed:", error);
+            logger.error("Embedding generation failed:", error);
             throw error;
         }
     }
@@ -164,7 +164,7 @@ class LocalEmbeddingModelManager {
         }
 
         if (finalEmbedding.length !== 384) {
-            elizaLogger.warn(
+            logger.warn(
                 `Unexpected embedding dimension: ${finalEmbedding.length}`
             );
         }

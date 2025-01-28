@@ -6,7 +6,7 @@
 import {
     type Character,
     defaultCharacter,
-    elizaLogger,
+    logger,
     validateCharacterConfig
 } from "@elizaos/core"
 import { onchainJson } from "@elizaos/plugin-iq6900"
@@ -38,7 +38,7 @@ export function parseArguments(): {
 			})
 			.parseSync()
 	} catch (error) {
-		elizaLogger.error("Error parsing arguments:", error)
+		logger.error("Error parsing arguments:", error)
 		return {}
 	}
 }
@@ -102,7 +102,7 @@ export async function loadCharacterFromOnchain(): Promise<Character[]> {
 
 		// Handle plugins
 		if (isAllStrings(character.plugins)) {
-			elizaLogger.info("Plugins are: ", character.plugins)
+			logger.info("Plugins are: ", character.plugins)
 			const importedPlugins = await Promise.all(
 				character.plugins.map(async (plugin) => {
 					const importedPlugin = await import(plugin)
@@ -113,10 +113,10 @@ export async function loadCharacterFromOnchain(): Promise<Character[]> {
 		}
 
 		loadedCharacters.push(character)
-		elizaLogger.info(`Successfully loaded character from: ${process.env.IQ_WALLET_ADDRESS}`)
+		logger.info(`Successfully loaded character from: ${process.env.IQ_WALLET_ADDRESS}`)
 		return loadedCharacters
 	} catch (e) {
-		elizaLogger.error(`Error parsing character from ${process.env.IQ_WALLET_ADDRESS}: ${e}`)
+		logger.error(`Error parsing character from ${process.env.IQ_WALLET_ADDRESS}: ${e}`)
 		process.exit(1)
 	}
 }
@@ -135,7 +135,7 @@ async function loadCharactersFromUrl(url: string): Promise<Character[]> {
 		}
 		return characters
 	} catch (e) {
-		elizaLogger.error(`Error loading character(s) from ${url}: ${e}`)
+		logger.error(`Error loading character(s) from ${url}: ${e}`)
 		process.exit(1)
 	}
 }
@@ -162,11 +162,11 @@ export async function jsonToCharacter(filePath: string, character: any): Promise
 	// Handle plugins
 	character.plugins = await handlePluginImporting(character.plugins)
 	if (character.extends) {
-		elizaLogger.info(`Merging  ${character.name} character with parent characters`)
+		logger.info(`Merging  ${character.name} character with parent characters`)
 		for (const extendPath of character.extends) {
 			const baseCharacter = await loadCharacter(path.resolve(path.dirname(filePath), extendPath))
 			character = mergeCharacters(baseCharacter, character)
-			elizaLogger.info(`Merged ${character.name} with ${baseCharacter.name}`)
+			logger.info(`Merged ${character.name} with ${baseCharacter.name}`)
 		}
 	}
 	return character
@@ -196,7 +196,7 @@ export async function loadCharacterTryPath(characterPath: string): Promise<Chara
 		path.resolve(__dirname, "../../characters", path.basename(characterPath)), // relative to project root characters dir
 	]
 
-	elizaLogger.info(
+	logger.info(
 		"Trying paths:",
 		pathsToTry.map((p) => ({
 			path: p,
@@ -213,17 +213,17 @@ export async function loadCharacterTryPath(characterPath: string): Promise<Chara
 	}
 
 	if (content === null) {
-		elizaLogger.error(`Error loading character from ${characterPath}: File not found in any of the expected locations`)
-		elizaLogger.error("Tried the following paths:")
-		pathsToTry.forEach((p) => elizaLogger.error(` - ${p}`))
+		logger.error(`Error loading character from ${characterPath}: File not found in any of the expected locations`)
+		logger.error("Tried the following paths:")
+		pathsToTry.forEach((p) => logger.error(` - ${p}`))
 		throw new Error(`Error loading character from ${characterPath}: File not found in any of the expected locations`)
 	}
 	try {
 		const character: Character = await loadCharacter(resolvedPath)
-		elizaLogger.info(`Successfully loaded character from: ${resolvedPath}`)
+		logger.info(`Successfully loaded character from: ${resolvedPath}`)
 		return character
 	} catch (e) {
-		elizaLogger.error(`Error parsing character from ${resolvedPath}: ${e}`)
+		logger.error(`Error parsing character from ${resolvedPath}: ${e}`)
 		throw new Error(`Error parsing character from ${resolvedPath}: ${e}`)
 	}
 }
@@ -241,7 +241,7 @@ async function readCharactersFromStorage(characterPaths: string[]): Promise<stri
 			characterPaths.push(path.join(uploadDir, fileName))
 		})
 	} catch (err) {
-		elizaLogger.error(`Error reading directory: ${err.message}`)
+		logger.error(`Error reading directory: ${err.message}`)
 	}
 
 	return characterPaths
@@ -268,7 +268,7 @@ export async function loadCharacters(charactersArg: string): Promise<Character[]
 	}
 
 	if (hasValidRemoteUrls()) {
-		elizaLogger.info("Loading characters from remote URLs")
+		logger.info("Loading characters from remote URLs")
 		const characterUrls = commaSeparatedStringToArray(process.env.REMOTE_CHARACTER_URLS)
 		for (const characterUrl of characterUrls) {
 			const characters = await loadCharactersFromUrl(characterUrl)
@@ -277,7 +277,7 @@ export async function loadCharacters(charactersArg: string): Promise<Character[]
 	}
 
 	if (loadedCharacters.length === 0) {
-		elizaLogger.info("No characters found, using default character")
+		logger.info("No characters found, using default character")
 		loadedCharacters.push(defaultCharacter)
 	}
 

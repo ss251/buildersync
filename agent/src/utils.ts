@@ -2,7 +2,7 @@
 // We'll be removing ModelProviderName and all hardcoded model provisioning, in favor of plugins with runtime function calls
 // settings should also probably go away
 
-import { Character, elizaLogger, ModelProviderName, settings } from "@elizaos/core";
+import { Character, logger, ModelProviderName, settings } from "@elizaos/core";
 export function getSecret(character: Character, secret: string) {
 	return character.settings?.secrets?.[secret] || process.env[secret]
 }
@@ -13,9 +13,9 @@ export const wait = (minTime = 1000, maxTime = 3000) => {
 }
 
 export const logFetch = async (url: string, options: any) => {
-	elizaLogger.debug(`Fetching ${url}`)
+	logger.debug(`Fetching ${url}`)
 	// Disabled to avoid disclosure of sensitive information such as API keys
-	// elizaLogger.debug(JSON.stringify(options, null, 2));
+	// logger.debug(JSON.stringify(options, null, 2));
 	return fetch(url, options)
 }
 
@@ -87,7 +87,7 @@ export function getTokenForProvider(provider: ModelProviderName, character: Char
 			return character.settings?.secrets?.LIVEPEER_GATEWAY_URL || settings.LIVEPEER_GATEWAY_URL
 		default:
 			const errorMessage = `Failed to get token - unsupported model provider: ${provider}`
-			elizaLogger.error(errorMessage)
+			logger.error(errorMessage)
 			throw new Error(errorMessage)
 	}
 }

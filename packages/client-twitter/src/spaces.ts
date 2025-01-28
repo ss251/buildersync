@@ -1,5 +1,5 @@
 import {
-    elizaLogger,
+    logger,
     type IAgentRuntime,
     composeContext,
     generateText,
@@ -52,7 +52,7 @@ Only return the text, no additional formatting.
         });
         return output.trim();
     } catch (err) {
-        elizaLogger.error("[generateFiller] Error generating filler:", err);
+        logger.error("[generateFiller] Error generating filler:", err);
         return "";
     }
 }
@@ -70,7 +70,7 @@ async function speakFiller(
     const text = await generateFiller(runtime, fillerType);
     if (!text) return;
 
-    elizaLogger.log(`[Space] Filler (${fillerType}) => ${text}`);
+    logger.log(`[Space] Filler (${fillerType}) => ${text}`);
     await sttTtsPlugin.speakText(text);
 
     if (sleepAfterMs > 0) {
@@ -108,7 +108,7 @@ Example:
             .filter(Boolean);
         return topics.length ? topics : ["Random Tech Chat", "AI Thoughts"];
     } catch (err) {
-        elizaLogger.error("[generateTopicsIfEmpty] GPT error =>", err);
+        logger.error("[generateTopicsIfEmpty] GPT error =>", err);
         return ["Random Tech Chat", "AI Thoughts"];
     }
 }
@@ -167,7 +167,7 @@ export class TwitterSpaceClient {
      * Periodic check to launch or manage space
      */
     public async startPeriodicSpaceCheck() {
-        elizaLogger.log("[Space] Starting periodic check routine...");
+        logger.log("[Space] Starting periodic check routine...");
 
         // For instance:
         const intervalMsWhenIdle = 5 * 60_000; // 5 minutes if no Space is running
@@ -199,7 +199,7 @@ export class TwitterSpaceClient {
                     );
                 }
             } catch (error) {
-                elizaLogger.error("[Space] Error in routine =>", error);
+                logger.error("[Space] Error in routine =>", error);
                 // In case of error, still schedule next iteration
                 this.checkInterval = setTimeout(routine, intervalMsWhenIdle);
             }
@@ -219,14 +219,14 @@ export class TwitterSpaceClient {
         // Random chance
         const r = Math.random();
         if (r > (this.decisionOptions.randomChance ?? 0.3)) {
-            elizaLogger.log("[Space] Random check => skip launching");
+            logger.log("[Space] Random check => skip launching");
             return false;
         }
         // Business hours
         if (this.decisionOptions.businessHoursOnly) {
             const hour = new Date().getUTCHours();
             if (hour < 9 || hour >= 17) {
-                elizaLogger.log("[Space] Out of business hours => skip");
+                logger.log("[Space] Out of business hours => skip");
                 return false;
             }
         }
@@ -237,12 +237,12 @@ export class TwitterSpaceClient {
                 (this.decisionOptions.minIntervalBetweenSpacesMinutes ?? 60) *
                 60_000;
             if (now - this.lastSpaceEndedAt < minIntervalMs) {
-                elizaLogger.log("[Space] Too soon since last space => skip");
+                logger.log("[Space] Too soon since last space => skip");
                 return false;
             }
         }
 
-        elizaLogger.log("[Space] Deciding to launch a new Space...");
+        logger.log("[Space] Deciding to launch a new Space...");
         return true;
     }
 
@@ -277,7 +277,7 @@ export class TwitterSpaceClient {
     }
 
     public async startSpace(config: SpaceConfig) {
-        elizaLogger.log("[Space] Starting a new Twitter Space...");
+        logger.log("[Space] Starting a new Twitter Space...");
 
         try {
             this.currentSpace = new Space(this.scraper);
@@ -297,12 +297,12 @@ export class TwitterSpaceClient {
             this.spaceId = broadcastInfo.room_id;
             // Plugins
             if (this.decisionOptions.enableRecording) {
-                elizaLogger.log("[Space] Using RecordToDiskPlugin");
+                logger.log("[Space] Using RecordToDiskPlugin");
                 this.currentSpace.use(new RecordToDiskPlugin());
             }
 
             if (this.decisionOptions.enableSttTts) {
-                elizaLogger.log("[Space] Using SttTtsPlugin");
+                logger.log("[Space] Using SttTtsPlugin");
                 const sttTts = new SttTtsPlugin();
                 this.sttTtsPlugin = sttTts;
                 this.currentSpace.use(sttTts, {
@@ -320,7 +320,7 @@ export class TwitterSpaceClient {
             }
 
             if (this.decisionOptions.enableIdleMonitor) {
-                elizaLogger.log("[Space] Using IdleMonitorPlugin");
+                logger.log("[Space] Using IdleMonitorPlugin");
                 this.currentSpace.use(
                     new IdleMonitorPlugin(
                         this.decisionOptions.idleKickTimeoutMs ?? 60_000,
@@ -338,7 +338,7 @@ export class TwitterSpaceClient {
                 "broadcasts",
                 "spaces"
             );
-            elizaLogger.log(`[Space] Space started => ${spaceUrl}`);
+            logger.log(`[Space] Space started => ${spaceUrl}`);
 
             // Greet
             await speakFiller(
@@ -349,7 +349,7 @@ export class TwitterSpaceClient {
 
             // Events
             this.currentSpace.on("occupancyUpdate", (update) => {
-                elizaLogger.log(
+                logger.log(
                     `[Space] Occupancy => ${update.occupancy} participant(s).`
                 );
             });
@@ -357,7 +357,7 @@ export class TwitterSpaceClient {
             this.currentSpace.on(
                 "speakerRequest",
                 async (req: SpeakerRequest) => {
-                    elizaLogger.log(
+                    logger.log(
                         `[Space] Speaker request from @${req.username} (${req.userId}).`
                     );
                     await this.handleSpeakerRequest(req);
@@ -365,7 +365,7 @@ export class TwitterSpaceClient {
             );
 
             this.currentSpace.on("idleTimeout", async (info) => {
-                elizaLogger.log(
+                logger.log(
                     `[Space] idleTimeout => no audio for ${info.idleMs} ms.`
                 );
                 await speakFiller(
@@ -377,7 +377,7 @@ export class TwitterSpaceClient {
             });
 
             process.on("SIGINT", async () => {
-                elizaLogger.log("[Space] SIGINT => stopping space");
+                logger.log("[Space] SIGINT => stopping space");
                 await speakFiller(
                     this.client.runtime,
                     this.sttTtsPlugin,
@@ -387,7 +387,7 @@ export class TwitterSpaceClient {
                 process.exit(0);
             });
         } catch (error) {
-            elizaLogger.error("[Space] Error launching Space =>", error);
+            logger.error("[Space] Error launching Space =>", error);
             this.isSpaceRunning = false;
             throw error;
         }
@@ -414,7 +414,7 @@ export class TwitterSpaceClient {
                 const speaker = this.activeSpeakers[i];
                 const elapsed = now - speaker.startTime;
                 if (elapsed > maxDur) {
-                    elizaLogger.log(
+                    logger.log(
                         `[Space] Speaker @${speaker.username} exceeded max duration => removing`
                     );
                     await this.removeSpeaker(speaker.userId);
@@ -434,7 +434,7 @@ export class TwitterSpaceClient {
 
             // 3) If somehow more than maxSpeakers are active, remove the extras
             if (numSpeakers > (this.decisionOptions.maxSpeakers ?? 1)) {
-                elizaLogger.log(
+                logger.log(
                     "[Space] More than maxSpeakers => removing extras..."
                 );
                 await this.kickExtraSpeakers(participants.speakers);
@@ -449,7 +449,7 @@ export class TwitterSpaceClient {
                     totalListeners === 0 &&
                     elapsedMinutes > 5)
             ) {
-                elizaLogger.log(
+                logger.log(
                     "[Space] Condition met => stopping the Space..."
                 );
                 await speakFiller(
@@ -461,7 +461,7 @@ export class TwitterSpaceClient {
                 await this.stopSpace();
             }
         } catch (error) {
-            elizaLogger.error("[Space] Error in manageCurrentSpace =>", error);
+            logger.error("[Space] Error in manageCurrentSpace =>", error);
         }
     }
 
@@ -495,7 +495,7 @@ export class TwitterSpaceClient {
 
         // If we haven't reached maxSpeakers, accept immediately
         if (janusSpeakers.length < (this.decisionOptions.maxSpeakers ?? 1)) {
-            elizaLogger.log(`[Space] Accepting speaker @${req.username} now`);
+            logger.log(`[Space] Accepting speaker @${req.username} now`);
             await speakFiller(
                 this.client.runtime,
                 this.sttTtsPlugin,
@@ -503,7 +503,7 @@ export class TwitterSpaceClient {
             );
             await this.acceptSpeaker(req);
         } else {
-            elizaLogger.log(
+            logger.log(
                 `[Space] Adding speaker @${req.username} to the queue`
             );
             this.speakerQueue.push(req);
@@ -520,9 +520,9 @@ export class TwitterSpaceClient {
                 username: req.username,
                 startTime: Date.now(),
             });
-            elizaLogger.log(`[Space] Speaker @${req.username} is now live`);
+            logger.log(`[Space] Speaker @${req.username} is now live`);
         } catch (err) {
-            elizaLogger.error(
+            logger.error(
                 `[Space] Error approving speaker @${req.username}:`,
                 err
             );
@@ -533,9 +533,9 @@ export class TwitterSpaceClient {
         if (!this.currentSpace) return;
         try {
             await this.currentSpace.removeSpeaker(userId);
-            elizaLogger.log(`[Space] Removed speaker userId=${userId}`);
+            logger.log(`[Space] Removed speaker userId=${userId}`);
         } catch (error) {
-            elizaLogger.error(
+            logger.error(
                 `[Space] Error removing speaker userId=${userId} =>`,
                 error
             );
@@ -553,7 +553,7 @@ export class TwitterSpaceClient {
         // sort by who joined first if needed, or just slice
         const extras = speakers.slice(ms);
         for (const sp of extras) {
-            elizaLogger.log(
+            logger.log(
                 `[Space] Removing extra speaker => userId=${sp.user_id}`
             );
             await this.removeSpeaker(sp.user_id);
@@ -571,10 +571,10 @@ export class TwitterSpaceClient {
     public async stopSpace() {
         if (!this.currentSpace || !this.isSpaceRunning) return;
         try {
-            elizaLogger.log("[Space] Stopping the current Space...");
+            logger.log("[Space] Stopping the current Space...");
             await this.currentSpace.stop();
         } catch (err) {
-            elizaLogger.error("[Space] Error stopping Space =>", err);
+            logger.error("[Space] Error stopping Space =>", err);
         } finally {
             this.isSpaceRunning = false;
             this.spaceId = undefined;

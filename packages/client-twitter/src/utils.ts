@@ -3,7 +3,7 @@ import { getEmbeddingZeroVector } from "@elizaos/core";
 import type { Content, Memory, UUID } from "@elizaos/core";
 import { stringToUuid } from "@elizaos/core";
 import type { ClientBase } from "./base";
-import { elizaLogger } from "@elizaos/core";
+import { logger } from "@elizaos/core";
 import type { Media } from "@elizaos/core";
 import fs from "fs";
 import path from "path";
@@ -39,20 +39,20 @@ export async function buildConversationThread(
     const visited: Set<string> = new Set();
 
     async function processThread(currentTweet: Tweet, depth = 0) {
-        elizaLogger.debug("Processing tweet:", {
+        logger.debug("Processing tweet:", {
             id: currentTweet.id,
             inReplyToStatusId: currentTweet.inReplyToStatusId,
             depth: depth,
         });
 
         if (!currentTweet) {
-            elizaLogger.debug("No current tweet found for thread building");
+            logger.debug("No current tweet found for thread building");
             return;
         }
 
         // Stop if we've reached our reply limit
         if (depth >= maxReplies) {
-            elizaLogger.debug("Reached maximum reply depth", depth);
+            logger.debug("Reached maximum reply depth", depth);
             return;
         }
 
@@ -102,14 +102,14 @@ export async function buildConversationThread(
         }
 
         if (visited.has(currentTweet.id)) {
-            elizaLogger.debug("Already visited tweet:", currentTweet.id);
+            logger.debug("Already visited tweet:", currentTweet.id);
             return;
         }
 
         visited.add(currentTweet.id);
         thread.unshift(currentTweet);
 
-        elizaLogger.debug("Current thread state:", {
+        logger.debug("Current thread state:", {
             length: thread.length,
             currentDepth: depth,
             tweetId: currentTweet.id,
@@ -117,7 +117,7 @@ export async function buildConversationThread(
 
         // If there's a parent tweet, fetch and process it
         if (currentTweet.inReplyToStatusId) {
-            elizaLogger.debug(
+            logger.debug(
                 "Fetching parent tweet:",
                 currentTweet.inReplyToStatusId
             );
@@ -127,25 +127,25 @@ export async function buildConversationThread(
                 );
 
                 if (parentTweet) {
-                    elizaLogger.debug("Found parent tweet:", {
+                    logger.debug("Found parent tweet:", {
                         id: parentTweet.id,
                         text: parentTweet.text?.slice(0, 50),
                     });
                     await processThread(parentTweet, depth + 1);
                 } else {
-                    elizaLogger.debug(
+                    logger.debug(
                         "No parent tweet found for:",
                         currentTweet.inReplyToStatusId
                     );
                 }
             } catch (error) {
-                elizaLogger.error("Error fetching parent tweet:", {
+                logger.error("Error fetching parent tweet:", {
                     tweetId: currentTweet.inReplyToStatusId,
                     error,
                 });
             }
         } else {
-            elizaLogger.debug(
+            logger.debug(
                 "Reached end of reply chain at:",
                 currentTweet.id
             );
@@ -154,7 +154,7 @@ export async function buildConversationThread(
 
     await processThread(tweet, 0);
 
-    elizaLogger.debug("Final thread built:", {
+    logger.debug("Final thread built:", {
         totalTweets: thread.length,
         tweetIds: thread.map((t) => ({
             id: t.id,
@@ -259,7 +259,7 @@ export async function sendTweet(
             sentTweets.push(finalTweet);
             previousTweetId = finalTweet.id;
         } else {
-            elizaLogger.error("Error sending tweet chunk:", {
+            logger.error("Error sending tweet chunk:", {
                 chunk,
                 response: body,
             });

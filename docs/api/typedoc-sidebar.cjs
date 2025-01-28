@@ -339,8 +339,8 @@ const typedocSidebar = {
                 { type: "doc", id: "variables/knowledge", label: "knowledge" },
                 {
                     type: "doc",
-                    id: "variables/elizaLogger",
-                    label: "elizaLogger",
+                    id: "variables/logger",
+                    label: "logger",
                 },
                 { type: "doc", id: "variables/models", label: "models" },
                 {

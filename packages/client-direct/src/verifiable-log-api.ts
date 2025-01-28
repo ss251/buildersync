@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-import { type AgentRuntime, elizaLogger, ServiceType }  from "@elizaos/runtime";
+import { type AgentRuntime, logger, ServiceType }  from "@elizaos/runtime";
 import type {
     VerifiableLogService,
     VerifiableLogQuery,
@@ -34,7 +34,7 @@ export function createVerifiableLogApiRouter(
                     data: pageQuery,
                 });
             } catch (error) {
-                elizaLogger.error("Detailed error:", error);
+                logger.error("Detailed error:", error);
                 res.status(500).json({
                     error: "failed to get agents registered ",
                     details: error.message,
@@ -66,7 +66,7 @@ export function createVerifiableLogApiRouter(
                     data: pageQuery,
                 });
             } catch (error) {
-                elizaLogger.error("Detailed error:", error);
+                logger.error("Detailed error:", error);
                 res.status(500).json({
                     error: "Failed to Get Attestation",
                     details: error.message,
@@ -105,7 +105,7 @@ export function createVerifiableLogApiRouter(
                     data: pageQuery,
                 });
             } catch (error) {
-                elizaLogger.error("Detailed error:", error);
+                logger.error("Detailed error:", error);
                 res.status(500).json({
                     error: "Failed to Get Verifiable Logs",
                     details: error.message,

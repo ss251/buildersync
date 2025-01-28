@@ -4,7 +4,7 @@
 
 import {
     type Character,
-    elizaLogger
+    logger
 } from "@elizaos/runtime";
 // import { zgPlugin } from "@elizaos/plugin-0g";
 // import { agentKitPlugin } from "@elizaos/plugin-agentkit";
@@ -109,16 +109,16 @@ import {
 
 let nodePlugin: any | undefined
 
-export const importPlugins = async (character: Character, token: string) => {
+export const importPlugins = async (character: Character) => {
     // nodePlugin ??= createNodePlugin();
-    // elizaLogger.log(`Creating runtime for character ${character.name}`)
+    // logger.log(`Creating runtime for character ${character.name}`)
 
 	// const teeMode = getSecret(character, "TEE_MODE") || "OFF"
 	// const walletSecretSalt = getSecret(character, "WALLET_SECRET_SALT")
 
 	// // Validate TEE configuration
 	// if (teeMode !== TEEMode.OFF && !walletSecretSalt) {
-	// 	elizaLogger.error("A WALLET_SECRET_SALT required when TEE_MODE is enabled")
+	// 	logger.error("A WALLET_SECRET_SALT required when TEE_MODE is enabled")
 	// 	throw new Error("Invalid TEE configuration")
 	// }
 
@@ -134,51 +134,7 @@ export const importPlugins = async (character: Character, token: string) => {
     //          getSecret(character, secret)
     //       );
     //     }
-
-	// Initialize Reclaim adapter if environment variables are present
-	// let verifiableInferenceAdapter;
-	// if (
-	//     process.env.RECLAIM_APP_ID &&
-	//     process.env.RECLAIM_APP_SECRET &&
-	//     process.env.VERIFIABLE_INFERENCE_ENABLED === "true"
-	// ) {
-	//     verifiableInferenceAdapter = new ReclaimAdapter({
-	//         appId: process.env.RECLAIM_APP_ID,
-	//         appSecret: process.env.RECLAIM_APP_SECRET,
-	//         modelProvider: character.modelProvider,
-	//         token,
-	//     });
-	//     elizaLogger.log("Verifiable inference adapter initialized");
-	// }
-	// Initialize Opacity adapter if environment variables are present
-	// let verifiableInferenceAdapter
-	// if (process.env.OPACITY_TEAM_ID && process.env.OPACITY_CLOUDFLARE_NAME && process.env.OPACITY_PROVER_URL && process.env.VERIFIABLE_INFERENCE_ENABLED === "true") {
-	// 	verifiableInferenceAdapter = new OpacityAdapter({
-	// 		teamId: process.env.OPACITY_TEAM_ID,
-	// 		teamName: process.env.OPACITY_CLOUDFLARE_NAME,
-	// 		opacityProverUrl: process.env.OPACITY_PROVER_URL,
-	// 		modelProvider: character.modelProvider,
-	// 		token: token,
-	// 	})
-	// 	elizaLogger.log("Verifiable inference adapter initialized")
-	// 	elizaLogger.log("teamId", process.env.OPACITY_TEAM_ID)
-	// 	elizaLogger.log("teamName", process.env.OPACITY_CLOUDFLARE_NAME)
-	// 	elizaLogger.log("opacityProverUrl", process.env.OPACITY_PROVER_URL)
-	// 	elizaLogger.log("modelProvider", character.modelProvider)
-	// 	elizaLogger.log("token", token)
-	// }
-	// if (process.env.PRIMUS_APP_ID && process.env.PRIMUS_APP_SECRET && process.env.VERIFIABLE_INFERENCE_ENABLED === "true") {
-	// 	verifiableInferenceAdapter = new PrimusAdapter({
-	// 		appId: process.env.PRIMUS_APP_ID,
-	// 		appSecret: process.env.PRIMUS_APP_SECRET,
-	// 		attMode: "proxytls",
-	// 		modelProvider: character.modelProvider,
-	// 		token,
-	// 	})
-	// 	elizaLogger.log("Verifiable inference primus adapter initialized")
-	// }
-    return {
-        plugins: [
+    return [
         // parseBooleanFromText(getSecret(character, "BITMIND")) &&
         // getSecret(character, "BITMIND_API_TOKEN")
         //     ? bittensorPlugin
@@ -430,12 +386,11 @@ export const importPlugins = async (character: Character, token: string) => {
         // getSecret(character, "GELATO_RELAY_API_KEY") ? gelatoPlugin : null,
         // getSecret(character, "TRIKON_WALLET_ADDRESS") ? trikonPlugin : null,
     ].flat().filter(Boolean)
-}
 };
 
 export async function handlePluginImporting(plugins: string[]) {
 	if (plugins.length > 0) {
-		elizaLogger.info("Plugins are: ", plugins)
+		logger.info("Plugins are: ", plugins)
 		const importedPlugins = await Promise.all(
 			plugins.map(async (plugin) => {
 				try {
@@ -443,7 +398,7 @@ export async function handlePluginImporting(plugins: string[]) {
 					const functionName = plugin.replace("@elizaos/plugin-", "").replace(/-./g, (x) => x[1].toUpperCase()) + "Plugin" // Assumes plugin function is camelCased with Plugin suffix
 					return importedPlugin.default || importedPlugin[functionName]
 				} catch (importError) {
-					elizaLogger.error(`Failed to import plugin: ${plugin}`, importError)
+					logger.error(`Failed to import plugin: ${plugin}`, importError)
 					return [] // Return null for failed imports
 				}
 			})
