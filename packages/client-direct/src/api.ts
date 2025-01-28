@@ -12,12 +12,12 @@ import {
     validateCharacterConfig,
     ServiceType,
     type Character,
-} from "@elizaos/core";
+} from "@elizaos/runtime";
 
 import type { TeeLogQuery, TeeLogService } from "@elizaos/plugin-tee-log";
 import { REST, Routes } from "discord.js";
 import type { DirectClient } from ".";
-import { validateUuid } from "@elizaos/core";
+import { validateUuid } from "@elizaos/runtime";
 
 interface UUIDParams {
     agentId: UUID;

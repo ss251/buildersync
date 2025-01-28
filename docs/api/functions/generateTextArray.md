@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / generateTextArray
+[@elizaos/runtime v0.1.7](../index.md) / generateTextArray
 
 # Function: generateTextArray()
 

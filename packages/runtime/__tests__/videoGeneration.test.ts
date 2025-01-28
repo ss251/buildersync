@@ -1,4 +1,4 @@
-import type { IAgentRuntime, Memory, State } from "@elizaos/core";
+import type { IAgentRuntime, Memory, State } from "@elizaos/runtime";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Mock the fetch function

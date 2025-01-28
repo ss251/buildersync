@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / IAwsS3Service
+[@elizaos/runtime v0.1.7](../index.md) / IAwsS3Service
 
 # Interface: IAwsS3Service
 

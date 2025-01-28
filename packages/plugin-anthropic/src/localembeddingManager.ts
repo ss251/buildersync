@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "url";
 import { FlagEmbedding, EmbeddingModel } from "fastembed";
-import elizaLogger from "@elizaos/core/src/logger";
+import elizaLogger from "@elizaos/runtime/src/logger";
 
 async function getLocalEmbedding(input: string): Promise<number[]> {
     elizaLogger.debug("DEBUG - Inside getLocalEmbedding function");

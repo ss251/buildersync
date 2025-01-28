@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / formatMessages
+[@elizaos/runtime v0.1.7](../index.md) / formatMessages
 
 # Function: formatMessages()
 

@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / DbCacheAdapter
+[@elizaos/runtime v0.1.7](../index.md) / DbCacheAdapter
 
 # Class: DbCacheAdapter
 

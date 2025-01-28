@@ -19,7 +19,7 @@
         "dist"
     ],
     "dependencies": {
-        "@elizaos/core": "workspace:*",
+        "@elizaos/runtime": "workspace:*",
         "@telegraf/types": "7.1.0",
         "telegraf": "4.16.3",
         "zod": "3.23.8"

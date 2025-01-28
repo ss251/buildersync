@@ -2,14 +2,14 @@ import { PGLiteDatabaseAdapter } from "@elizaos/adapter-pglite";
 import { PostgresDatabaseAdapter } from "@elizaos/adapter-postgres";
 import { QdrantDatabaseAdapter } from "@elizaos/adapter-qdrant";
 import { RedisClient } from "@elizaos/adapter-redis";
-import { SqliteDatabaseAdapter } from "@elizaos/adapter-sqlite";
+import { SqliteDatabaseAdapter } from "../../packages/adapter-sqlite-old/dist";
 import { SupabaseDatabaseAdapter } from "@elizaos/adapter-supabase";
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
 import { InstagramClientInterface } from "@elizaos/client-instagram";
 import { LensAgentClient } from "@elizaos/client-lens";
 import { SlackClientInterface } from "@elizaos/client-slack";
-import { TelegramClientInterface } from "@elizaos/client-telegram";
+import { TelegramClientInterface } from "../../packages/client-telegram/dist";
 import { TelegramAccountClientInterface } from "@elizaos/client-telegram-account";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
 import { AlexaClientInterface } from "@elizaos/client-alexa";
@@ -47,7 +47,7 @@ import {
     settings,
     stringToUuid,
     validateCharacterConfig,
-} from "@elizaos/core";
+} from "@elizaos/runtime";
 import { zgPlugin } from "@elizaos/plugin-0g";
 import { footballPlugin } from "@elizaos/plugin-football";
 
@@ -955,61 +955,15 @@ export async function createAgent(
         );
     }
 
-    // Initialize Reclaim adapter if environment variables are present
-    // let verifiableInferenceAdapter;
-    // if (
-    //     process.env.RECLAIM_APP_ID &&
-    //     process.env.RECLAIM_APP_SECRET &&
-    //     process.env.VERIFIABLE_INFERENCE_ENABLED === "true"
-    // ) {
-    //     verifiableInferenceAdapter = new ReclaimAdapter({
-    //         appId: process.env.RECLAIM_APP_ID,
-    //         appSecret: process.env.RECLAIM_APP_SECRET,
-    //         modelProvider: character.modelProvider,
-    //         token,
-    //     });
-    //     elizaLogger.log("Verifiable inference adapter initialized");
-    // }
-    // Initialize Opacity adapter if environment variables are present
-    let verifiableInferenceAdapter;
-    if (
-        process.env.OPACITY_TEAM_ID &&
-        process.env.OPACITY_CLOUDFLARE_NAME &&
-        process.env.OPACITY_PROVER_URL &&
-        process.env.VERIFIABLE_INFERENCE_ENABLED === "true"
-    ) {
-        verifiableInferenceAdapter = new OpacityAdapter({
-            teamId: process.env.OPACITY_TEAM_ID,
-            teamName: process.env.OPACITY_CLOUDFLARE_NAME,
-            opacityProverUrl: process.env.OPACITY_PROVER_URL,
-            modelProvider: character.modelProvider,
-            token: token,
-        });
         elizaLogger.log("Verifiable inference adapter initialized");
         elizaLogger.log("teamId", process.env.OPACITY_TEAM_ID);
         elizaLogger.log("teamName", process.env.OPACITY_CLOUDFLARE_NAME);
         elizaLogger.log("opacityProverUrl", process.env.OPACITY_PROVER_URL);
-        elizaLogger.log("modelProvider", character.modelProvider);
         elizaLogger.log("token", token);
-    }
-    if (
-        process.env.PRIMUS_APP_ID &&
-        process.env.PRIMUS_APP_SECRET &&
-        process.env.VERIFIABLE_INFERENCE_ENABLED === "true"
-    ) {
-        verifiableInferenceAdapter = new PrimusAdapter({
-            appId: process.env.PRIMUS_APP_ID,
-            appSecret: process.env.PRIMUS_APP_SECRET,
-            attMode: "proxytls",
-            modelProvider: character.modelProvider,
-            token,
-        });
-        elizaLogger.log("Verifiable inference primus adapter initialized");
     }
 
     return new AgentRuntime({
         databaseAdapter: db,
-        token,
         modelProvider: character.modelProvider,
         evaluators: [],
         character,
@@ -1301,7 +1255,6 @@ export async function createAgent(
         managers: [],
         cacheManager: cache,
         fetch: logFetch,
-        verifiableInferenceAdapter,
     });
 }
 

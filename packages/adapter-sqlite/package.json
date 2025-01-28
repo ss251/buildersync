@@ -19,7 +19,7 @@
         "dist"
     ],
     "dependencies": {
-        "@elizaos/core": "workspace:*",
+        "@elizaos/runtime": "workspace:*",
         "@types/better-sqlite3": "7.6.12",
         "better-sqlite3": "11.6.0",
         "sqlite-vec": "0.1.6"

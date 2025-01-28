@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-import { type AgentRuntime, elizaLogger, ServiceType }  from "@elizaos/core";
+import { type AgentRuntime, elizaLogger, ServiceType }  from "@elizaos/runtime";
 import type {
     VerifiableLogService,
     VerifiableLogQuery,

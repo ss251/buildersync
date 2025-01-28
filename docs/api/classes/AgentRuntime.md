@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / AgentRuntime
+[@elizaos/runtime v0.1.7](../index.md) / AgentRuntime
 
 # Class: AgentRuntime
 

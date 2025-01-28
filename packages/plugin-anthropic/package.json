@@ -15,7 +15,7 @@
     }
   },
   "dependencies": {
-    "@elizaos/core": "workspace:*",
+    "@elizaos/runtime": "workspace:*",
     "@anthropic-ai/sdk": "^0.33.1"
   },
   "devDependencies": {

@@ -253,7 +253,7 @@ pnpm add -w -D ts-node typescript @types/node
 pnpm add -D ts-node typescript @types/node --filter "@elizaos/agent"
 
 # Also add to the core package since it's needed there too
-pnpm add -D ts-node typescript @types/node --filter "@elizaos/core"
+pnpm add -D ts-node typescript @types/node --filter "@elizaos/runtime"
 
 # First clean everything
 pnpm clean

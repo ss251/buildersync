@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / EmbeddingProviderType
+[@elizaos/runtime v0.1.7](../index.md) / EmbeddingProviderType
 
 # Type Alias: EmbeddingProviderType
 

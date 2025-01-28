@@ -1,4 +1,11 @@
-import type { Readable } from "stream";
+import { AnyPrompt, InferPromptVariables, Prompt } from './prompt';
+import { ZodSchema, z } from 'zod';
+import type { EventEmitter } from 'events';
+import { AgentRuntime } from './base';
+
+export type Pretty<type> = { [key in keyof type]: type[key] } & unknown;
+
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 /**
  * Represents a UUID string in the format "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -6,1646 +13,1306 @@ import type { Readable } from "stream";
 export type UUID = `${string}-${string}-${string}-${string}-${string}`;
 
 /**
- * Represents the content of a message or communication
- */
-export interface Content {
-    /** The main text content */
-    text: string;
-
-    /** Optional action associated with the message */
-    action?: string;
-
-    /** Optional source/origin of the content */
-    source?: string;
-
-    /** URL of the original message/post (e.g. tweet URL, Discord message link) */
-    url?: string;
-
-    /** UUID of parent message if this is a reply/thread */
-    inReplyTo?: UUID;
-
-    /** Array of media attachments */
-    attachments?: Media[];
-
-    /** Additional dynamic properties */
-    [key: string]: unknown;
-}
-
-/**
- * Example content with associated user for demonstration purposes
- */
-export interface ActionExample {
-    /** User associated with the example */
-    user: string;
-
-    /** Content of the example */
-    content: Content;
-}
-
-/**
- * Example conversation content with user ID
- */
-export interface ConversationExample {
-    /** UUID of user in conversation */
-    userId: UUID;
-
-    /** Content of the conversation */
-    content: Content;
-}
-
-/**
  * Represents an actor/participant in a conversation
  */
 export interface Actor {
-    /** Display name */
-    name: string;
+  /** Unique identifier */
+  id: UUID;
 
-    /** Username/handle */
-    username: string;
+  /** Display name */
+  name: string;
 
-    /** Additional profile details */
-    details: {
-        /** Short profile tagline */
-        tagline: string;
+  /** Username/handle */
+  username: string;
+}
 
-        /** Longer profile summary */
-        summary: string;
+/**
+ * Represents a stored memory/message
+ */
 
-        /** Favorite quote */
-        quote: string;
-    };
+export interface IMemory<
+  TType extends string = string,
+  TContent extends Record<string, any> = any,
+  TMetadata extends Record<string, any> = any,
+> {
+  /** Optional unique identifier */
+  id: UUID;
 
-    /** Unique identifier */
-    id: UUID;
+  // type: string;
+  type: TType;
+
+  /** Associated agent ID */
+  agentId: UUID;
+
+  /** Associated user ID */
+  userId: UUID;
+
+  /** Associated room ID */
+  roomId: UUID;
+
+  /** Optional creation timestamp */
+  createdAt: number;
+
+  /** IMemory content */
+  content: TContent;
+
+  /** Optional embedding vector */
+  embedding?: number[];
+
+  /** Whether memory is unique */
+  unique?: boolean;
+
+  /** Embedding similarity score */
+  similarity?: number;
+
+  metadata: TMetadata;
+}
+
+export type AnyMemory = IMemory<any, any, any>;
+
+export type ActionParams<
+  TParams extends ZodSchema<any> = ZodSchema<any>,
+  TMemory extends AnyMemory = AnyMemory,
+> =
+  | TParams
+  | (<TState = any>(
+    runtime: IAgentRuntime,
+    message: TMemory,
+    state: TState
+  ) => TParams);
+
+export type InferActionParamsSchema<TActionParams extends ActionParams<any>> =
+  TActionParams extends ActionParams<infer Params> ? Params : never;
+
+/**
+ * Validator function type for actions/evaluators
+ */
+
+export type ActionValidator<
+  TState = any,
+  TMemory extends IMemory = AnyMemory,
+  TParams extends ActionParams = ActionParams,
+  TAgentRuntime extends IAgentRuntime<TState> = IAgentRuntime<TState>,
+> = (
+  runtime: TAgentRuntime,
+  message: TMemory,
+  state: TState | undefined,
+  params: z.infer<InferActionParamsSchema<TParams>>
+) => Promise<boolean>;
+
+type AnyAgentRuntime<TState = any> = IAgentRuntime<TState>;
+
+/**
+ * Handler function type for processing messages
+ */
+export type ActionHandler<
+  TState = any,
+  TMemory extends IMemory = AnyMemory,
+  TResult = any,
+  TParams extends ActionParams = ActionParams,
+  TAgentRuntime extends AnyAgentRuntime<TState> = AnyAgentRuntime<TState>,
+  HandlerCallback = any,
+> = (
+  runtime: TAgentRuntime,
+  memory: TMemory,
+  state: TState,
+  params: z.infer<InferActionParamsSchema<TParams>>,
+  callback?: HandlerCallback
+) => Promise<TResult>;
+
+/**
+ * Represents an action the agent can perform
+ */
+export interface IAction<
+  TState = any,
+  TMemory extends IMemory = AnyMemory,
+  TParams extends ActionParams = ActionParams,
+  TResult = any,
+  TAgentRuntime extends AnyAgentRuntime<TState> = any,
+  HandlerCallback = any,
+> {
+  name: string;
+  //   /** Similar action descriptions */
+  //   similes: string[];
+
+  /** Detailed description */
+  description: string;
+
+  parameters: TParams;
+
+  enabled: boolean;
+
+  /** Handler function */
+  handler: ActionHandler<
+    TState,
+    TMemory,
+    TResult,
+    TParams,
+    TAgentRuntime,
+    HandlerCallback
+  >;
+
+  /** IAction name */
+
+  /** Validation function */
+  validate: ActionValidator<TState, TMemory, TParams, TAgentRuntime>;
 }
 
 /**
  * Represents a single objective within a goal
  */
 export interface Objective {
-    /** Optional unique identifier */
-    id?: string;
+  /** Optional unique identifier */
+  id?: string;
 
-    /** Description of what needs to be achieved */
-    description: string;
+  /** Description of what needs to be achieved */
+  description: string;
 
-    /** Whether objective is completed */
-    completed: boolean;
+  /** Whether objective is completed */
+  completed: boolean;
 }
 
 /**
  * Status enum for goals
  */
 export enum GoalStatus {
-    DONE = "DONE",
-    FAILED = "FAILED",
-    IN_PROGRESS = "IN_PROGRESS",
+  DONE = 'DONE',
+  FAILED = 'FAILED',
+  IN_PROGRESS = 'IN_PROGRESS',
 }
 
 /**
  * Represents a high-level goal composed of objectives
  */
 export interface Goal {
-    /** Optional unique identifier */
-    id?: UUID;
+  /** Optional unique identifier */
+  id?: UUID;
 
-    /** Room ID where goal exists */
-    roomId: UUID;
+  /** Room ID where goal exists */
+  roomId: UUID;
 
-    /** User ID of goal owner */
-    userId: UUID;
+  /** User ID of goal owner */
+  userId: UUID;
 
-    /** Name/title of the goal */
-    name: string;
+  /** Name/title of the goal */
+  name: string;
 
-    /** Current status */
-    status: GoalStatus;
+  /** Current status */
+  status: GoalStatus;
 
-    /** Component objectives */
-    objectives: Objective[];
+  /** Component objectives */
+  objectives: Objective[];
 }
 
 /**
- * Model size/type classification
+ * IProvider for external data/services
  */
-export enum ModelClass {
-    SMALL = "small",
-    MEDIUM = "medium",
-    LARGE = "large",
-    EMBEDDING = "embedding",
-    IMAGE = "image",
-}
-
-/**
- * Model settings
- */
-export type ModelSettings = {
-    /** Model name */
-    name: string;
-
-    /** Maximum input tokens */
-    maxInputTokens: number;
-
-    /** Maximum output tokens */
-    maxOutputTokens: number;
-
-    /** Optional frequency penalty */
-    frequency_penalty?: number;
-
-    /** Optional presence penalty */
-    presence_penalty?: number;
-
-    /** Optional repetition penalty */
-    repetition_penalty?: number;
-
-    /** Stop sequences */
-    stop: string[];
-
-    /** Temperature setting */
-    temperature: number;
-
-    /** Optional telemetry configuration (experimental) */
-    experimental_telemetry?: TelemetrySettings;
-};
-
-/** Image model settings */
-export type ImageModelSettings = {
-    name: string;
-    steps?: number;
-};
-
-/** Embedding model settings */
-export type EmbeddingModelSettings = {
-    name: string;
-    dimensions?: number;
-};
-
-/**
- * Configuration for an AI model
- */
-export type Model = {
-    /** Optional API endpoint */
-    endpoint?: string;
-
-    /** Model names by size class */
-    model: {
-        [ModelClass.SMALL]?: ModelSettings;
-        [ModelClass.MEDIUM]?: ModelSettings;
-        [ModelClass.LARGE]?: ModelSettings;
-        [ModelClass.EMBEDDING]?: EmbeddingModelSettings;
-        [ModelClass.IMAGE]?: ImageModelSettings;
-    };
-};
-
-/**
- * Model configurations by provider
- */
-export type Models = {
-    [ModelProviderName.OPENAI]: Model;
-    [ModelProviderName.ETERNALAI]: Model;
-    [ModelProviderName.ANTHROPIC]: Model;
-    [ModelProviderName.GROK]: Model;
-    [ModelProviderName.GROQ]: Model;
-    [ModelProviderName.LLAMACLOUD]: Model;
-    [ModelProviderName.TOGETHER]: Model;
-    [ModelProviderName.LLAMALOCAL]: Model;
-    [ModelProviderName.GOOGLE]: Model;
-    [ModelProviderName.MISTRAL]: Model;
-    [ModelProviderName.CLAUDE_VERTEX]: Model;
-    [ModelProviderName.REDPILL]: Model;
-    [ModelProviderName.OPENROUTER]: Model;
-    [ModelProviderName.OLLAMA]: Model;
-    [ModelProviderName.HEURIST]: Model;
-    [ModelProviderName.GALADRIEL]: Model;
-    [ModelProviderName.FAL]: Model;
-    [ModelProviderName.GAIANET]: Model;
-    [ModelProviderName.ALI_BAILIAN]: Model;
-    [ModelProviderName.VOLENGINE]: Model;
-    [ModelProviderName.NANOGPT]: Model;
-    [ModelProviderName.HYPERBOLIC]: Model;
-    [ModelProviderName.VENICE]: Model;
-    [ModelProviderName.NVIDIA]: Model;
-    [ModelProviderName.NINETEEN_AI]: Model;
-    [ModelProviderName.AKASH_CHAT_API]: Model;
-    [ModelProviderName.LIVEPEER]: Model;
-    [ModelProviderName.DEEPSEEK]: Model;
-    [ModelProviderName.INFERA]: Model;
-    [ModelProviderName.BEDROCK]: Model;
-    [ModelProviderName.ATOMA]: Model;
-};
-
-/**
- * Available model providers
- */
-export enum ModelProviderName {
-    OPENAI = "openai",
-    ETERNALAI = "eternalai",
-    ANTHROPIC = "anthropic",
-    GROK = "grok",
-    GROQ = "groq",
-    LLAMACLOUD = "llama_cloud",
-    TOGETHER = "together",
-    LLAMALOCAL = "llama_local",
-    GOOGLE = "google",
-    MISTRAL = "mistral",
-    CLAUDE_VERTEX = "claude_vertex",
-    REDPILL = "redpill",
-    OPENROUTER = "openrouter",
-    OLLAMA = "ollama",
-    HEURIST = "heurist",
-    GALADRIEL = "galadriel",
-    FAL = "falai",
-    GAIANET = "gaianet",
-    ALI_BAILIAN = "ali_bailian",
-    VOLENGINE = "volengine",
-    NANOGPT = "nanogpt",
-    HYPERBOLIC = "hyperbolic",
-    VENICE = "venice",
-    NVIDIA = "nvidia",
-    NINETEEN_AI = "nineteen_ai",
-    AKASH_CHAT_API = "akash_chat_api",
-    LIVEPEER = "livepeer",
-    LETZAI = "letzai",
-    DEEPSEEK = "deepseek",
-    INFERA = "infera",
-    BEDROCK = "bedrock",
-    ATOMA = "atoma",
-}
-
-/**
- * Represents the current state/context of a conversation
- */
-export interface State {
-    /** ID of user who sent current message */
-    userId?: UUID;
-
-    /** ID of agent in conversation */
-    agentId?: UUID;
-
-    /** Agent's biography */
-    bio: string;
-
-    /** Agent's background lore */
-    lore: string;
-
-    /** Message handling directions */
-    messageDirections: string;
-
-    /** Post handling directions */
-    postDirections: string;
-
-    /** Current room/conversation ID */
-    roomId: UUID;
-
-    /** Optional agent name */
-    agentName?: string;
-
-    /** Optional message sender name */
-    senderName?: string;
-
-    /** String representation of conversation actors */
-    actors: string;
-
-    /** Optional array of actor objects */
-    actorsData?: Actor[];
-
-    /** Optional string representation of goals */
-    goals?: string;
-
-    /** Optional array of goal objects */
-    goalsData?: Goal[];
-
-    /** Recent message history as string */
-    recentMessages: string;
-
-    /** Recent message objects */
-    recentMessagesData: Memory[];
-
-    /** Optional valid action names */
-    actionNames?: string;
-
-    /** Optional action descriptions */
-    actions?: string;
-
-    /** Optional action objects */
-    actionsData?: Action[];
-
-    /** Optional action examples */
-    actionExamples?: string;
-
-    /** Optional provider descriptions */
-    providers?: string;
-
-    /** Optional response content */
-    responseData?: Content;
-
-    /** Optional recent interaction objects */
-    recentInteractionsData?: Memory[];
-
-    /** Optional recent interactions string */
-    recentInteractions?: string;
-
-    /** Optional formatted conversation */
-    formattedConversation?: string;
-
-    /** Optional formatted knowledge */
-    knowledge?: string;
-    /** Optional knowledge data */
-    knowledgeData?: KnowledgeItem[];
-    /** Optional knowledge data */
-    ragKnowledgeData?: RAGKnowledgeItem[];
-
-    /** Additional dynamic properties */
-    [key: string]: unknown;
-}
-
-/**
- * Represents a stored memory/message
- */
-export interface Memory {
-    /** Optional unique identifier */
-    id?: UUID;
-
-    /** Associated user ID */
-    userId: UUID;
-
-    /** Associated agent ID */
-    agentId: UUID;
-
-    /** Optional creation timestamp */
-    createdAt?: number;
-
-    /** Memory content */
-    content: Content;
-
-    /** Optional embedding vector */
-    embedding?: number[];
-
-    /** Associated room ID */
-    roomId: UUID;
-
-    /** Whether memory is unique */
-    unique?: boolean;
-
-    /** Embedding similarity score */
-    similarity?: number;
-}
-
-/**
- * Example message for demonstration
- */
-export interface MessageExample {
-    /** Associated user */
-    user: string;
-
-    /** Message content */
-    content: Content;
+export interface IProvider<
+  TState = any,
+  TMemory extends IMemory<any, any> = IMemory<any, any>,
+> {
+  /** Data retrieval function */
+  get: (
+    runtime: IAgentRuntime<TState>,
+    memory: TMemory,
+    state: TState
+  ) => Promise<any>;
 }
 
 /**
  * Handler function type for processing messages
  */
-export type Handler = (
-    runtime: IAgentRuntime,
-    message: Memory,
-    state?: State,
-    options?: { [key: string]: unknown },
-    callback?: HandlerCallback,
-) => Promise<unknown>;
+export type EvaluatorHandler<
+  TState = any,
+  TMemory extends IMemory<any, any> = IMemory<any, any>,
+  TResult = any,
+  TAgentRuntime extends IAgentRuntime<TState> = IAgentRuntime<TState>,
+  HandlerCallback = any,
+> = (
+  runtime: TAgentRuntime,
+  message: TMemory,
+  state: TState,
+  callback: HandlerCallback
+) => Promise<TResult>;
 
-/**
- * Callback function type for handlers
- */
-export type HandlerCallback = (
-    response: Content,
-    files?: any,
-) => Promise<Memory[]>;
-
-/**
- * Validator function type for actions/evaluators
- */
-export type Validator = (
-    runtime: IAgentRuntime,
-    message: Memory,
-    state?: State,
+export type EvaluatorValidator<
+  TState = any,
+  TMemory extends IMemory<any, any> = IMemory<any, any>,
+  TAgentRuntime extends IAgentRuntime<TState> = IAgentRuntime<TState>,
+> = (
+  runtime: TAgentRuntime,
+  message: TMemory,
+  state: TState
 ) => Promise<boolean>;
 
 /**
- * Represents an action the agent can perform
+ * IEvaluator for assessing agent responses
  */
-export interface Action {
-    /** Similar action descriptions */
-    similes: string[];
+export interface IEvaluator<
+  TState = any,
+  TMemory extends IMemory = AnyMemory,
+  TResult = any,
+  TAgentRuntime extends IAgentRuntime<TState> = any,
+  HandlerCallback = any,
+> {
+  /** IEvaluator name */
+  name: string;
 
-    /** Detailed description */
-    description: string;
+  /** Detailed description */
+  description: string;
 
-    /** Example usages */
-    examples: ActionExample[][];
+  /** Whether to always run */
+  alwaysRun?: boolean;
 
-    /** Handler function */
-    handler: Handler;
+  /** Handler function */
+  handler: EvaluatorHandler<
+    TState,
+    TMemory,
+    TResult,
+    TAgentRuntime,
+    HandlerCallback
+  >;
 
-    /** Action name */
-    name: string;
-
-    /** Validation function */
-    validate: Validator;
-
-    /** Whether to suppress the initial message when this action is used */
-    suppressInitialMessage?: boolean;
-}
-
-/**
- * Example for evaluating agent behavior
- */
-export interface EvaluationExample {
-    /** Evaluation context */
-    context: string;
-
-    /** Example messages */
-    messages: Array<ActionExample>;
-
-    /** Expected outcome */
-    outcome: string;
-}
-
-/**
- * Evaluator for assessing agent responses
- */
-export interface Evaluator {
-    /** Whether to always run */
-    alwaysRun?: boolean;
-
-    /** Detailed description */
-    description: string;
-
-    /** Similar evaluator descriptions */
-    similes: string[];
-
-    /** Example evaluations */
-    examples: EvaluationExample[];
-
-    /** Handler function */
-    handler: Handler;
-
-    /** Evaluator name */
-    name: string;
-
-    /** Validation function */
-    validate: Validator;
-}
-
-/**
- * Provider for external data/services
- */
-export interface Provider {
-    /** Data retrieval function */
-    get: (
-        runtime: IAgentRuntime,
-        message: Memory,
-        state?: State,
-    ) => Promise<any>;
+  /** Validation function */
+  validate: EvaluatorValidator<TState, TMemory, TAgentRuntime>;
 }
 
 /**
  * Represents a relationship between users
  */
 export interface Relationship {
-    /** Unique identifier */
-    id: UUID;
+  /** Unique identifier */
+  id: UUID;
 
-    /** First user ID */
-    userA: UUID;
+  /** First user ID */
+  userA: UUID;
 
-    /** Second user ID */
-    userB: UUID;
+  /** Second user ID */
+  userB: UUID;
 
-    /** Primary user ID */
-    userId: UUID;
+  /** Primary user ID */
+  userId: UUID;
 
-    /** Associated room ID */
-    roomId: UUID;
+  /** Associated room ID */
+  roomId: UUID;
 
-    /** Relationship status */
-    status: string;
+  /** Relationship status */
+  status: string;
 
-    /** Optional creation timestamp */
-    createdAt?: string;
+  /** Optional creation timestamp */
+  createdAt?: string;
 }
 
 /**
  * Represents a user account
  */
 export interface Account {
-    /** Unique identifier */
-    id: UUID;
+  /** Unique identifier */
+  id: UUID;
 
-    /** Display name */
-    name: string;
+  /** Display name */
+  name: string;
 
-    /** Username */
-    username: string;
-
-    /** Optional additional details */
-    details?: { [key: string]: any };
-
-    /** Optional email */
-    email?: string;
-
-    /** Optional avatar URL */
-    avatarUrl?: string;
+  /** Username */
+  username: string;
 }
 
 /**
  * Room participant with account details
  */
 export interface Participant {
-    /** Unique identifier */
-    id: UUID;
+  /** Unique identifier */
+  id: UUID;
 
-    /** Associated account */
-    account: Account;
+  /** Associated account */
+  account: Account;
 }
 
 /**
  * Represents a conversation room
  */
 export interface Room {
-    /** Unique identifier */
-    id: UUID;
+  /** Unique identifier */
+  id: UUID;
 
-    /** Room participants */
-    participants: Participant[];
+  //   /** Room participants */
+  //   participants: Participant[];
+}
+
+/**
+ * Client interface for platform connections
+ */
+export type Client<TMemory extends AnyMemory = AnyMemory> = {
+  name: string;
+
+  /** Start client connection */
+  start: () => Promise<void>;
+
+  /** Stop client connection */
+  stop: () => Promise<void>;
+
+  sendMessage(message: TMemory): Promise<TMemory>;
+};
+
+export interface Service {
+  initialize(runtime: AnyAgentRuntime): Promise<void>;
+}
+
+/**
+ * Plugin for extending agent functionality
+ */
+export type IPlugin<
+  TState = any,
+  TAction extends IAction<TState> = IAction<TState>,
+  TProvider extends IProvider<TState> = IProvider<TState>,
+  TEvaluator extends IEvaluator<TState> = IEvaluator<TState>,
+> = {
+  /** Plugin name */
+  name: string;
+
+  /** Plugin description */
+  description: string;
+
+  /** Optional actions */
+  actions?: TAction[];
+
+  /** Optional providers */
+  providers?: TProvider[];
+
+  /** Optional evaluators */
+  evaluators?: TEvaluator[];
+
+  /** Optional inventory providers */
+  inventoryProviders?: InventoryProvider[];
+
+  /** Optional services */
+  services?: Service[];
+
+  /** Optional clients */
+  clients?: Client[];
+};
+
+/**
+ * Interface for database operations
+ */
+export interface IDatabaseAdapter<DB = unknown> {
+  /**
+   * The database instance.
+   */
+  db: DB;
+
+  /** Optional initialization */
+  init(): Promise<void>;
+
+  /** Close database connection */
+  close(): Promise<void>;
+  /**
+   * Retrieves an account by its ID.
+   * @param userId The UUID of the user account to retrieve.
+   * @returns A Promise that resolves to the Account object or null if not found.
+   */
+  getAccountById(userId: UUID): Promise<Account | null>;
+
+  /**
+   * Creates a new account in the database.
+   * @param account The account object to create.
+   * @returns A Promise that resolves when the account creation is complete.
+   */
+  createAccount(account: Account): Promise<boolean>;
+
+  /**
+   * Retrieves memories based on the specified parameters.
+   * @param params An object containing parameters for the memory retrieval.
+   * @returns A Promise that resolves to an array of IMemory objects.
+   */
+  getMemories<
+    TType extends string = string,
+    TContent extends Record<string, any> = any,
+    TMemory extends IMemory<TType, TContent> = IMemory<TType, TContent>,
+  >(params: {
+    agentId: UUID;
+    roomId: UUID;
+    count?: number;
+    unique?: boolean;
+    tableName: string;
+    start?: number;
+    end?: number;
+  }): Promise<TMemory[]>;
+
+  getMemoriesByRoomIds<
+    TMemory extends IMemory<any, any> = IMemory<any, any>,
+  >(params: {
+    agentId: UUID;
+    roomIds: UUID[];
+    tableName: string;
+  }): Promise<TMemory[]>;
+
+  getMemoryById<TMemory extends IMemory<any, any> = IMemory<any, any>>(
+    id: UUID
+  ): Promise<TMemory | null>;
+
+  /**
+   * Retrieves cached embeddings based on the specified query parameters.
+   * @param params An object containing parameters for the embedding retrieval.
+   * @returns A Promise that resolves to an array of objects containing embeddings and levenshtein scores.
+   */
+  getCachedEmbeddings({
+    query_table_name,
+    query_threshold,
+    query_input,
+    query_field_name,
+    query_field_sub_name,
+    query_match_count,
+  }: {
+    query_table_name: string;
+    query_threshold: number;
+    query_input: string;
+    query_field_name: string;
+    query_field_sub_name: string;
+    query_match_count: number;
+  }): Promise<
+    {
+      embedding: number[];
+      levenshtein_score: number;
+    }[]
+  >;
+
+  /**
+   * Logs an event or action with the specified details.
+   * @param params An object containing parameters for the log entry.
+   * @returns A Promise that resolves when the log entry has been saved.
+   */
+  log(params: {
+    body: { [key: string]: unknown };
+    userId: UUID;
+    roomId: UUID;
+    type: string;
+  }): Promise<void>;
+
+  /**
+   * Retrieves details of actors in a given room.
+   * @param params An object containing the roomId to search for actors.
+   * @returns A Promise that resolves to an array of Actor objects.
+   */
+  getActorDetails(params: { roomId: UUID }): Promise<Actor[]>;
+
+  /**
+   * Searches for memories based on embeddings and other specified parameters.
+   * @param params An object containing parameters for the memory search.
+   * @returns A Promise that resolves to an array of IMemory objects.
+   */
+  searchMemories<
+    TType extends string = string,
+    TContent extends Record<string, any> = any,
+    TMemory extends IMemory<TType, TContent> = IMemory<TType, TContent>,
+  >(params: {
+    tableName: TType;
+    agentId: UUID;
+    roomId: UUID;
+    embedding: number[];
+    match_threshold: number;
+    match_count: number;
+    unique: boolean;
+  }): Promise<TMemory[]>;
+
+  /**
+   * Updates the status of a specific goal.
+   * @param params An object containing the goalId and the new status.
+   * @returns A Promise that resolves when the goal status has been updated.
+   */
+  updateGoalStatus(params: { goalId: UUID; status: GoalStatus }): Promise<void>;
+
+  /**
+   * Searches for memories by embedding and other specified parameters.
+   * @param embedding The embedding vector to search with.
+   * @param params Additional parameters for the search.
+   * @returns A Promise that resolves to an array of IMemory objects.
+   */
+  searchMemoriesByEmbedding<
+    TType extends string = string,
+    TContent extends Record<string, any> = any,
+  >(
+    embedding: number[],
+    params: {
+      match_threshold?: number;
+      count?: number;
+      roomId?: UUID;
+      agentId?: UUID;
+      unique?: boolean;
+      tableName: TType;
+    }
+  ): Promise<IMemory<TType, TContent>[]>;
+
+  /**
+   * Creates a new memory in the database.
+   * @param memory The memory object to create.
+   * @param tableName The table where the memory should be stored.
+   * @param unique Indicates if the memory should be unique.
+   * @returns A Promise that resolves when the memory has been created.
+   */
+  createMemory(
+    memory: IMemory,
+    tableName: string,
+    unique?: boolean
+  ): Promise<void>;
+
+  /**
+   * Removes a specific memory from the database.
+   * @param memoryId The UUID of the memory to remove.
+   * @param tableName The table from which the memory should be removed.
+   * @returns A Promise that resolves when the memory has been removed.
+   */
+  removeMemory(memoryId: UUID, tableName: string): Promise<void>;
+
+  /**
+   * Removes all memories associated with a specific room.
+   * @param roomId The UUID of the room whose memories should be removed.
+   * @param tableName The table from which the memories should be removed.
+   * @returns A Promise that resolves when all memories have been removed.
+   */
+  removeAllMemories(roomId: UUID, tableName: string): Promise<void>;
+
+  /**
+   * Counts the number of memories in a specific room.
+   * @param roomId The UUID of the room for which to count memories.
+   * @param unique Specifies whether to count only unique memories.
+   * @param tableName Optional table name to count memories from.
+   * @returns A Promise that resolves to the number of memories.
+   */
+  countMemories(
+    roomId: UUID,
+    unique?: boolean,
+    tableName?: string
+  ): Promise<number>;
+
+  /**
+   * Retrieves goals based on specified parameters.
+   * @param params An object containing parameters for goal retrieval.
+   * @returns A Promise that resolves to an array of Goal objects.
+   */
+  getGoals(params: {
+    agentId: UUID;
+    roomId: UUID;
+    userId?: UUID | null;
+    onlyInProgress?: boolean;
+    count?: number;
+  }): Promise<Goal[]>;
+
+  /**
+   * Updates a specific goal in the database.
+   * @param goal The goal object with updated properties.
+   * @returns A Promise that resolves when the goal has been updated.
+   */
+  updateGoal(goal: Goal): Promise<void>;
+
+  /**
+   * Creates a new goal in the database.
+   * @param goal The goal object to create.
+   * @returns A Promise that resolves when the goal has been created.
+   */
+  createGoal(goal: Goal): Promise<void>;
+
+  /**
+   * Removes a specific goal from the database.
+   * @param goalId The UUID of the goal to remove.
+   * @returns A Promise that resolves when the goal has been removed.
+   */
+  removeGoal(goalId: UUID): Promise<void>;
+
+  /**
+   * Removes all goals associated with a specific room.
+   * @param roomId The UUID of the room whose goals should be removed.
+   * @returns A Promise that resolves when all goals have been removed.
+   */
+  removeAllGoals(roomId: UUID): Promise<void>;
+
+  /**
+   * Retrieves the room ID for a given room, if it exists.
+   * @param roomId The UUID of the room to retrieve.
+   * @returns A Promise that resolves to the room ID or null if not found.
+   */
+  getRoom(roomId: UUID): Promise<UUID | null>;
+
+  /**
+   * Creates a new room with an optional specified ID.
+   * @param roomId Optional UUID to assign to the new room.
+   * @returns A Promise that resolves to the UUID of the created room.
+   */
+  createRoom(roomId?: UUID): Promise<UUID>;
+
+  /**
+   * Removes a specific room from the database.
+   * @param roomId The UUID of the room to remove.
+   * @returns A Promise that resolves when the room has been removed.
+   */
+  removeRoom(roomId: UUID): Promise<void>;
+
+  /**
+   * Retrieves room IDs for which a specific user is a participant.
+   * @param userId The UUID of the user.
+   * @returns A Promise that resolves to an array of room IDs.
+   */
+  getRoomsForParticipant(userId: UUID): Promise<UUID[]>;
+
+  /**
+   * Retrieves room IDs for which specific users are participants.
+   * @param userIds An array of UUIDs of the users.
+   * @returns A Promise that resolves to an array of room IDs.
+   */
+  getRoomsForParticipants(userIds: UUID[]): Promise<UUID[]>;
+
+  /**
+   * Adds a user as a participant to a specific room.
+   * @param userId The UUID of the user to add as a participant.
+   * @param roomId The UUID of the room to which the user will be added.
+   * @returns A Promise that resolves to a boolean indicating success or failure.
+   */
+  addParticipant(userId: UUID, roomId: UUID): Promise<boolean>;
+
+  /**
+   * Removes a user as a participant from a specific room.
+   * @param userId The UUID of the user to remove as a participant.
+   * @param roomId The UUID of the room from which the user will be removed.
+   * @returns A Promise that resolves to a boolean indicating success or failure.
+   */
+  removeParticipant(userId: UUID, roomId: UUID): Promise<boolean>;
+
+  /**
+   * Retrieves participants associated with a specific account.
+   * @param userId The UUID of the account.
+   * @returns A Promise that resolves to an array of Participant objects.
+   */
+  getParticipantsForAccount(userId: UUID): Promise<Participant[]>;
+
+  /**
+   * Retrieves participants associated with a specific account.
+   * @param userId The UUID of the account.
+   * @returns A Promise that resolves to an array of Participant objects.
+   */
+  getParticipantsForAccount(userId: UUID): Promise<Participant[]>;
+
+  /**
+   * Retrieves participants for a specific room.
+   * @param roomId The UUID of the room for which to retrieve participants.
+   * @returns A Promise that resolves to an array of UUIDs representing the participants.
+   */
+  getParticipantsForRoom(roomId: UUID): Promise<UUID[]>;
+
+  getParticipantUserState(
+    roomId: UUID,
+    userId: UUID
+  ): Promise<'FOLLOWED' | 'MUTED' | null>;
+  setParticipantUserState(
+    roomId: UUID,
+    userId: UUID,
+    state: 'FOLLOWED' | 'MUTED' | null
+  ): Promise<void>;
+
+  /**
+   * Creates a new relationship between two users.
+   * @param params An object containing the UUIDs of the two users (userA and userB).
+   * @returns A Promise that resolves to a boolean indicating success or failure of the creation.
+   */
+  createRelationship(params: { userA: UUID; userB: UUID }): Promise<boolean>;
+
+  /**
+   * Retrieves a relationship between two users if it exists.
+   * @param params An object containing the UUIDs of the two users (userA and userB).
+   * @returns A Promise that resolves to the Relationship object or null if not found.
+   */
+  getRelationship(params: {
+    userA: UUID;
+    userB: UUID;
+  }): Promise<Relationship | null>;
+
+  /**
+   * Retrieves all relationships for a specific user.
+   * @param params An object containing the UUID of the user.
+   * @returns A Promise that resolves to an array of Relationship objects.
+   */
+
+  getRelationships(params: { userId: UUID }): Promise<Relationship[]>;
+}
+
+export interface IDatabaseCacheAdapter {
+  getCache(params: { agentId: UUID; key: string }): Promise<string | undefined>;
+
+  setCache(params: {
+    agentId: UUID;
+    key: string;
+    value: string;
+  }): Promise<boolean>;
+
+  deleteCache(params: { agentId: UUID; key: string }): Promise<boolean>;
+}
+
+// type DefaultEventMap = [never];
+
+type EventMap<T = any> =
+  T extends Record<infer Key, any[]> ? Record<Key, T[Key]> : Record<any, any[]>;
+
+export type MemoryManagerEventMap<
+  TType extends string = string,
+  TContent extends Record<string, any> = any,
+  TMemory extends IMemory<TType, TContent> = IMemory<TType, TContent>,
+  T extends Record<string, any[]> = Record<string, any[]>,
+> = EventMap<
+  {
+    'memory:created': [
+      {
+        type?: TType;
+        memory: TMemory;
+      },
+    ];
+  } & T
+>;
+
+export type MemoryCreateData<TMemory extends Memory> = Omit<
+  Optional<TMemory, 'id' | 'metadata' | 'embedding'>,
+  'agentId' | 'type'
+>;
+
+export interface IMemoryManager<
+  TMemory extends IMemory<any, any> = IMemory<any, any>,
+// TEventMap extends T,
+> extends EventEmitter<
+  MemoryManagerEventMap<TMemory['type'], TMemory['content'], TMemory>
+> {
+  runtime: IAgentRuntime<any>;
+  tableName: TMemory['type'];
+
+  addEmbeddingToMemory(memory: TMemory): Promise<TMemory>;
+
+  getMemories(opts: {
+    roomId: UUID;
+    count?: number;
+    unique?: boolean;
+    start?: number;
+    end?: number;
+  }): Promise<TMemory[]>;
+
+  getCachedEmbeddings(
+    content: string
+  ): Promise<{ embedding: number[]; levenshtein_score: number }[]>;
+
+  getMemoryById(id: UUID): Promise<TMemory | null>;
+
+  getMemoriesByRoomIds(params: { roomIds: UUID[] }): Promise<TMemory[]>;
+
+  searchMemoriesByEmbedding(
+    embedding: number[],
+    opts: {
+      match_threshold?: number;
+      count?: number;
+      roomId: UUID;
+      unique?: boolean;
+    }
+  ): Promise<TMemory[]>;
+
+  createMemory(
+    memory: MemoryCreateData<TMemory>,
+    unique?: boolean
+  ): Promise<TMemory>;
+
+  removeMemory(memoryId: UUID): Promise<void>;
+
+  removeAllMemories(roomId: UUID): Promise<void>;
+
+  countMemories(roomId: UUID, unique?: boolean): Promise<number>;
+}
+
+export type CacheOptions = {
+  expires?: number;
+};
+
+export interface ICacheManager {
+  get<T = unknown>(key: string): Promise<T | undefined>;
+  set<T>(key: string, value: T, options?: CacheOptions): Promise<void>;
+  delete(key: string): Promise<void>;
+}
+
+export interface MemoryRegistry extends Record<string, IMemory> {
+  messages: AnyMemory;
+  actions: AnyMemory;
+}
+
+// type ParseEventName =
+
+type EventName = `${string}::${string}`;
+
+export type EventParams<T = any> = T;
+
+export interface EventRegistry extends Record<string, EventParams> { }
+
+export interface MemoryRegistry extends Record<string, IMemory> {
+  messages: AnyMemory;
+  actions: AnyMemory;
+}
+
+export interface AgentRegistry {
+  events: EventRegistry;
+  memory: MemoryRegistry;
+}
+
+export type ICharacter = {
+  name: string;
+  username: string;
+};
+
+export type EventListener<EventParams = any> = (params: EventParams) => void;
+
+export type EventSubscriber = () => void;
+
+export type FunctionHandler<
+  Params = any,
+  ReturnType = any,
+  TAgentRuntime extends IAgentRuntime = AnyAgentRuntime,
+> = (runtime: TAgentRuntime, params: Params) => Promise<ReturnType>;
+
+export type IFunction<
+  Name = any,
+  Params = any,
+  ReturnType = any,
+  TAgentRuntime extends IAgentRuntime = AnyAgentRuntime,
+> = {
+  name: Name;
+  handler: FunctionHandler<Params, ReturnType, TAgentRuntime>;
+};
+
+export type AnyFunction = IFunction<any, any, any, any>;
+
+export type InferFunctionParams<TFunction extends AnyFunction> =
+  TFunction extends IFunction<any, infer Params, any, any> ? Params : any;
+
+export type InferFunctionReturnType<TFunction extends AnyFunction> =
+  TFunction extends IFunction<any, any, infer ReturnType, any>
+  ? ReturnType
+  : any;
+
+export interface IAgentRuntime<
+  TState = any,
+  TCharacter extends ICharacter = ICharacter,
+  //   TEval = any,
+  IMemoryRegistry extends MemoryRegistry = MemoryRegistry,
+  TEventRegistry extends EventRegistry = EventRegistry,
+  // TFunctionRegistry extends Record<string, AnyFunction> = Record<
+  //   string,
+  //   AnyFunction
+  // >,
+  TAction extends IAction<TState> = IAction<TState>,
+  TProvider extends IProvider<TState> = IProvider<TState>,
+  TEvaluator extends IEvaluator<TState> = IEvaluator<TState>,
+  TPlugin extends IPlugin<TState> = IPlugin<
+    TState,
+    TAction,
+    TProvider,
+    TEvaluator
+  >,
+> {
+  // Properties
+  agentId: UUID;
+
+  db: IDatabaseAdapter;
+  cache: ICacheManager;
+  files: IFileManager;
+
+  character: TCharacter;
+
+  providers: TProvider[];
+  actions: TAction[];
+  evaluators: TEvaluator[];
+
+  inventory: InventoryProvider[]
+
+  plugins: TPlugin[];
+  clients: Map<string, Client>;
+
+  services: Map<string, Service>;
+  memoryManagers: Map<string, IMemoryManager>;
+
+  listeners: Map<string, Set<EventListener<any>>>;
+
+  functions: Map<string, AnyFunction>;
+
+  initialize(): Promise<void>;
+
+  registerMemoryManager(manager: IMemoryManager): void;
+
+  getMemoryManager(name: string): IMemoryManager;
+
+  getService<TService extends Service>(service: string): TService;
+
+  registerService(name: string, service: Service): void;
+
+  registerPlugin(plugin: TPlugin): void;
+
+  registerClient(client: Client): void;
+
+  registerAction(action: TAction): void;
+
+  registerEvaluator(evaluator: TEvaluator): void;
+
+  registerContextProvider(provider: TProvider): void;
+
+  on<Event extends keyof TEventRegistry>(
+    event: Event,
+    listener: EventListener<TEventRegistry[Event]>
+  ): EventSubscriber;
+
+  emit<
+    Event extends keyof TEventRegistry,
+    Params extends TEventRegistry[Event],
+  >(
+    event: Event,
+    params: Params
+  ): void;
+
+  registerFunction<TFunction extends AnyFunction>(Function: TFunction): void;
+
+  // call<TFunction extends AnyFunction>(
+  //   name: TFunction['name'],
+  //   params: InferFunctionParams<TFunction>
+  // ): Promise<InferFunctionReturnType<TFunction>>;
+
+  getSetting<T = string>(key: string): T;
+
+  processActions(
+    message: IMemoryRegistry['messages'],
+    actions: IMemoryRegistry['actions'][],
+    state: TState
+    // callback?: HandlerCallback
+  ): Promise<TState>;
+
+  evaluate(
+    message: IMemoryRegistry['messages'],
+    state: TState,
+    didRespond?: boolean
+  ): Promise<any>;
+
+  ensureParticipantExists(userId: UUID, roomId: UUID): Promise<void>;
+
+  ensureUserExists(
+    userId: UUID,
+    userName: string | null,
+    name: string | null,
+    source: string | null
+  ): Promise<void>;
+
+  registerAction(action: TAction): void;
+
+  ensureConnection(
+    userId: UUID,
+    roomId: UUID,
+    userName?: string,
+    userScreenName?: string,
+    source?: string
+  ): Promise<void>;
+
+  ensureParticipantInRoom(userId: UUID, roomId: UUID): Promise<void>;
+
+  ensureRoomExists(roomId: UUID): Promise<void>;
+
+  composeState(message: IMemoryRegistry['messages']): Promise<TState>;
+
+  composeState<ExtendedState>(
+    message: IMemoryRegistry['messages'],
+    customState: ExtendedState
+  ): Promise<TState & ExtendedState>;
+
+  updateRecentMessageState<RState extends TState = TState>(
+    state: RState
+  ): Promise<RState>;
+}
+
+export interface IFileManager {
+  read(file: string): Promise<string>;
+  readBytes(file: string): Promise<Buffer>;
+
+  write(file: string, data: string): Promise<void>;
+  writeBytes(file: string, data: Buffer): Promise<void>;
+
+  exists(file: string): Promise<boolean>;
+
+  ls(path: string): Promise<{ filename: string }[]>;
 }
 
 /**
  * Represents a media attachment
  */
 export type Media = {
-    /** Unique identifier */
-    id: string;
+  /** Unique identifier */
+  id: string;
 
-    /** Media URL */
-    url: string;
+  /** Media URL */
+  url: string;
 
-    /** Media title */
-    title: string;
+  /** Media title */
+  title: string;
 
-    /** Media source */
-    source: string;
+  /** Media source */
+  source: string;
 
-    /** Media description */
-    description: string;
+  /** Media description */
+  description: string;
 
-    /** Text content */
-    text: string;
+  /** Text content */
+  text: string;
 
-    /** Content type */
-    contentType?: string;
+  /** Content type */
+  contentType?: string;
 };
 
 /**
- * Client interface for platform connections
+ * Represents the content of a message or communication
  */
-export type Client = {
-    /** Start client connection */
-    start: (runtime: IAgentRuntime) => Promise<unknown>;
+export interface MessageContent {
+  /** The main text content */
+  text: string;
 
-    /** Stop client connection */
-    stop: (runtime: IAgentRuntime) => Promise<unknown>;
+  /** Optional action associated with the message */
+  action?: string;
+
+  /** Optional source/origin of the content */
+  source?: string;
+
+  /** URL of the original message/post (e.g. tweet URL, Discord message link) */
+  url?: string;
+
+  /** UUID of parent message if this is a reply/thread */
+  inReplyTo?: UUID;
+
+  /** Array of media attachments */
+  attachments?: Media[];
+
+  /** Additional dynamic properties */
+  [key: string]: unknown;
+}
+
+export type ClientMetadata = {
+  name: string;
+  chatId: any;
+  userId: any;
+  msgId: any;
+  data: any;
 };
 
+export type MemoryMetadata = {
+  client?: ClientMetadata;
+};
+
+export type Memory<
+  TType extends string = string,
+  TContent extends Record<string, any> = any,
+  TMetadata extends MemoryMetadata = MemoryMetadata,
+> = IMemory<TType, TContent, TMetadata>;
+
+export type Message = Memory<'messages', MessageContent>;
+
+export type ActionCall = {
+  type: 'call';
+  name: string;
+  msgId?: UUID;
+  params: any;
+};
+
+export type ActionResult = {
+  type: 'result';
+  name: string;
+  msgId?: UUID;
+  callId: UUID;
+  params: any;
+  result: any;
+};
+
+export type ActionCallMemory = Memory<'actions', ActionCall>;
+export type ActionResultMemory = Memory<'actions', ActionResult>;
+export type ActionMemory = Memory<'actions', ActionCall | ActionResult>;
+
+export type Thought = Memory<'thoughts', { msgId: string; text: string }>;
+
 /**
- * Plugin for extending agent functionality
+ * Represents the current state/context of a conversation
  */
-export type Plugin = {
-    /** Plugin name */
+export interface State {
+  /** ID of agent in conversation */
+  agent: Actor;
+  room: Room;
+  messages: Message[];
+  actors: Actor[];
+  inventory: InventoryProvider[];
+  actions: {
+    calls: Map<UUID, ActionCallMemory>;
+    results: Map<UUID, ActionResultMemory>;
+    processing: Set<UUID>;
+  };
+  thoughts: Thought[];
+
+  // // llm actions all the contexts already included (character, etc)
+  // ask(); // do you wish to confirm x?
+
+  // shouldRespond?();
+
+  // think(smt: any): Promise<Thought>;
+  // decide(actions: Action[]): Promise<ActionCall[]>;
+
+  // // user actions
+
+  // inventory(): Promise<Inventory>;
+  // createMessage(): Promise<Message>;
+
+  // execute(actions: ActionCall[]): Promise<ActionResult[]>;
+
+  // // custom memory used to saved custom states, like shopping carts, etc
+  // compose<T>(key: string, moreState: T);
+  // get<T>(key: string): T;
+}
+
+export interface ElizaMemoryRegistry extends Record<string, Memory> {
+  messages: Message;
+  actions: ActionMemory;
+  thoughts: Thought;
+}
+
+export type CreateMemoryManagersConfig<
+  TMemoryRegistry extends Record<string, Memory>,
+> = {
+    [Key in keyof TMemoryRegistry]: IMemoryManager<TMemoryRegistry[Key]>;
+  };
+
+// TODO;
+export type ActionHandlerCallback = () => void;
+
+export type Function<
+  Name = string,
+  Params = any,
+  ReturnType = any,
+  TElizaRegistry extends ElizaRegistry = ElizaRegistry,
+> = IFunction<Name, Params, ReturnType, IElizaRuntime<TElizaRegistry>>;
+
+export type GenerateTextParams = {
+  model: 'SMALL' | 'MEDIUM' | 'LARGE';
+  system: string;
+  prompt?: string;
+  stop?: string[];
+};
+
+export type GenerateTextFunction = Function<
+  'generate::text',
+  GenerateTextParams,
+  string
+>;
+
+export interface FunctionRegistry extends Record<any, Function> {
+  'generate::text': GenerateTextFunction;
+}
+
+export interface ElizaRegistry extends Record<string, any> {
+  // memories: any;
+  // events: any;
+  // functions: any;
+}
+
+export interface IElizaRuntime<
+  TElizaRegistry extends ElizaRegistry = ElizaRegistry,
+> extends IAgentRuntime<
+  State,
+  ICharacter,
+  TElizaRegistry['memories'],
+  TElizaRegistry['events'],
+  Action,
+  Provider,
+  Evaluator
+> {
+  memories: CreateMemoryManagersConfig<ElizaMemoryRegistry>;
+  contexts: Map<string, Context>;
+
+  call<
+    Name extends
+    keyof TElizaRegistry['functions'] = keyof TElizaRegistry['functions'],
+    TFunction extends
+    TElizaRegistry['functions'][Name] = TElizaRegistry['functions'][Name],
+  >(
+    name: Name,
+    params: InferFunctionParams<TFunction>
+  ): Promise<InferFunctionReturnType<TFunction>>;
+}
+
+export type Provider = IProvider<State, Message>;
+
+export type Action<
+  TParams extends ActionParams = ActionParams,
+  TResult = any,
+> = IAction<
+  State,
+  Message,
+  TParams,
+  TResult,
+  IElizaRuntime,
+  ActionHandlerCallback
+>;
+
+// TODO;
+export type EvaluatorHandlerCallback = () => void;
+
+export type Evaluator<TResult = any> = IEvaluator<
+  State,
+  Message,
+  TResult,
+  IElizaRuntime,
+  EvaluatorHandlerCallback
+>;
+
+export type Plugin = IPlugin<State, Action, Provider, Evaluator>;
+
+export interface RuntimeData extends Record<string, any> {
+  runtime: IElizaRuntime;
+  message: Message;
+  state: State;
+  actors: Map<UUID, Actor>
+};
+
+export type Context<
+  TPrompt extends AnyPrompt = AnyPrompt> = {
     name: string;
-
-    /** Plugin description */
     description: string;
 
-    /** Optional actions */
-    actions?: Action[];
-
-    /** Optional providers */
-    providers?: Provider[];
-
-    /** Optional evaluators */
-    evaluators?: Evaluator[];
-
-    /** Optional services */
+    content: TPrompt;
+    prepare?: (props: RuntimeData) => Promise<InferPromptVariables<TPrompt>>
+    plugins?: Plugin[];
     services?: Service[];
+    providers?: Provider[];
+    evaluators?: Evaluator[];
+    actions?: Action[];
+  };
 
-    /** Optional clients */
-    clients?: Client[];
-};
+// Inventory
 
-/**
- * Available client platforms
- */
-export enum Clients {
-    ALEXA= "alexa",
-    DISCORD = "discord",
-    DIRECT = "direct",
-    TWITTER = "twitter",
-    TELEGRAM = "telegram",
-    TELEGRAM_ACCOUNT = "telegram-account",
-    FARCASTER = "farcaster",
-    LENS = "lens",
-    AUTO = "auto",
-    SLACK = "slack",
-    GITHUB = "github",
-    INSTAGRAM = "instagram",
-    SIMSAI = "simsai",
-    XMTP = "xmtp",
-    DEVA = "deva",
+export type InventoryItem = {
+  name: string
+  ticker: string
+  address: string
+  description: string
+  quantity: number
 }
 
-export interface IAgentConfig {
-    [key: string]: string;
+export type InventoryAction = {
+  name: string
+  description: string
+  parameters: any
+  handler: (runtime: IAgentRuntime<any, any, any, any, any, any>, params: any, callback?: ActionHandlerCallback) => Promise<any>;
 }
 
-export type TelemetrySettings = {
-    /**
-     * Enable or disable telemetry. Disabled by default while experimental.
-     */
-    isEnabled?: boolean;
-    /**
-     * Enable or disable input recording. Enabled by default.
-     *
-     * You might want to disable input recording to avoid recording sensitive
-     * information, to reduce data transfers, or to increase performance.
-     */
-    recordInputs?: boolean;
-    /**
-     * Enable or disable output recording. Enabled by default.
-     *
-     * You might want to disable output recording to avoid recording sensitive
-     * information, to reduce data transfers, or to increase performance.
-     */
-    recordOutputs?: boolean;
-    /**
-     * Identifier for this function. Used to group telemetry data by function.
-     */
-    functionId?: string;
-};
-
-export interface ModelConfiguration {
-    temperature?: number;
-    max_response_length?: number;
-    frequency_penalty?: number;
-    presence_penalty?: number;
-    maxInputTokens?: number;
-    experimental_telemetry?: TelemetrySettings;
+export type InventoryProvider = {
+  name: string
+  description: string
+  items: InventoryItem[]
+  actions: InventoryAction[]
 }
-
-export type TemplateType = string | ((options: { state: State }) => string);
-
-/**
- * Configuration for an agent character
- */
-export type Character = {
-    /** Optional unique identifier */
-    id?: UUID;
-
-    /** Character name */
-    name: string;
-
-    /** Optional username */
-    username?: string;
-
-    /** Optional email */
-    email?: string;
-
-    /** Optional system prompt */
-    system?: string;
-
-    /** Optional prompt templates */
-    templates?: {
-        goalsTemplate?: TemplateType;
-        factsTemplate?: TemplateType;
-        messageHandlerTemplate?: TemplateType;
-        shouldRespondTemplate?: TemplateType;
-        continueMessageHandlerTemplate?: TemplateType;
-        evaluationTemplate?: TemplateType;
-        twitterSearchTemplate?: TemplateType;
-        twitterActionTemplate?: TemplateType;
-        twitterPostTemplate?: TemplateType;
-        twitterMessageHandlerTemplate?: TemplateType;
-        twitterShouldRespondTemplate?: TemplateType;
-        twitterVoiceHandlerTemplate?: TemplateType;
-        instagramPostTemplate?: TemplateType;
-        instagramMessageHandlerTemplate?: TemplateType;
-        instagramShouldRespondTemplate?: TemplateType;
-        farcasterPostTemplate?: TemplateType;
-        lensPostTemplate?: TemplateType;
-        farcasterMessageHandlerTemplate?: TemplateType;
-        lensMessageHandlerTemplate?: TemplateType;
-        farcasterShouldRespondTemplate?: TemplateType;
-        lensShouldRespondTemplate?: TemplateType;
-        telegramMessageHandlerTemplate?: TemplateType;
-        telegramShouldRespondTemplate?: TemplateType;
-        telegramAutoPostTemplate?: string;
-        telegramPinnedMessageTemplate?: string;
-        discordAutoPostTemplate?: string;
-        discordAnnouncementHypeTemplate?: string;
-        discordVoiceHandlerTemplate?: TemplateType;
-        discordShouldRespondTemplate?: TemplateType;
-        discordMessageHandlerTemplate?: TemplateType;
-        slackMessageHandlerTemplate?: TemplateType;
-        slackShouldRespondTemplate?: TemplateType;
-        jeeterPostTemplate?: string;
-        jeeterSearchTemplate?: string;
-        jeeterInteractionTemplate?: string;
-        jeeterMessageHandlerTemplate?: string;
-        jeeterShouldRespondTemplate?: string;
-        devaPostTemplate?: string;
-    };
-
-    /** Character biography */
-    bio: string | string[];
-
-    /** Character background lore */
-    lore: string[];
-
-    /** Example messages */
-    messageExamples: MessageExample[][];
-
-    /** Example posts */
-    postExamples: string[];
-
-    /** Known topics */
-    topics: string[];
-
-    /** Character traits */
-    adjectives: string[];
-
-    /** Optional knowledge base */
-    knowledge?: (string | { path: string; shared?: boolean })[];
-
-    /** Supported client platforms */
-    clients: Clients[];
-
-    /** Available plugins */
-    plugins: Plugin[];
-
-    /** Optional configuration */
-    settings?: {
-        secrets?: { [key: string]: string };
-        intiface?: boolean;
-        imageSettings?: {
-            steps?: number;
-            width?: number;
-            height?: number;
-            cfgScale?: number;
-            negativePrompt?: string;
-            numIterations?: number;
-            guidanceScale?: number;
-            seed?: number;
-            modelId?: string;
-            jobId?: string;
-            count?: number;
-            stylePreset?: string;
-            hideWatermark?: boolean;
-            safeMode?: boolean;
-        };
-        voice?: {
-            model?: string; // For VITS
-            url?: string; // Legacy VITS support
-            elevenlabs?: {
-                // New structured ElevenLabs config
-                voiceId: string;
-                model?: string;
-                stability?: string;
-                similarityBoost?: string;
-                style?: string;
-                useSpeakerBoost?: string;
-            };
-        };
-        model?: string;
-        modelConfig?: ModelConfiguration;
-        embeddingModel?: string;
-        chains?: {
-            evm?: any[];
-            solana?: any[];
-            [key: string]: any[];
-        };
-        transcription?: TranscriptionProvider;
-        ragKnowledge?: boolean;
-    };
-
-    /** Optional client-specific config */
-    clientConfig?: {
-        discord?: {
-            shouldIgnoreBotMessages?: boolean;
-            shouldIgnoreDirectMessages?: boolean;
-            shouldRespondOnlyToMentions?: boolean;
-            messageSimilarityThreshold?: number;
-            isPartOfTeam?: boolean;
-            teamAgentIds?: string[];
-            teamLeaderId?: string;
-            teamMemberInterestKeywords?: string[];
-            allowedChannelIds?: string[];
-            autoPost?: {
-                enabled?: boolean;
-                monitorTime?: number;
-                inactivityThreshold?: number;
-                mainChannelId?: string;
-                announcementChannelIds?: string[];
-                minTimeBetweenPosts?: number;
-            };
-        };
-        telegram?: {
-            shouldIgnoreBotMessages?: boolean;
-            shouldIgnoreDirectMessages?: boolean;
-            shouldRespondOnlyToMentions?: boolean;
-            shouldOnlyJoinInAllowedGroups?: boolean;
-            allowedGroupIds?: string[];
-            messageSimilarityThreshold?: number;
-            isPartOfTeam?: boolean;
-            teamAgentIds?: string[];
-            teamLeaderId?: string;
-            teamMemberInterestKeywords?: string[];
-            autoPost?: {
-                enabled?: boolean;
-                monitorTime?: number;
-                inactivityThreshold?: number;
-                mainChannelId?: string;
-                pinnedMessagesGroups?: string[];
-                minTimeBetweenPosts?: number;
-            };
-        };
-        slack?: {
-            shouldIgnoreBotMessages?: boolean;
-            shouldIgnoreDirectMessages?: boolean;
-        };
-        gitbook?: {
-            keywords?: {
-                projectTerms?: string[];
-                generalQueries?: string[];
-            };
-            documentTriggers?: string[];
-        };
-    };
-
-    /** Writing style guides */
-    style: {
-        all: string[];
-        chat: string[];
-        post: string[];
-    };
-
-    /** Optional Twitter profile */
-    twitterProfile?: {
-        id: string;
-        username: string;
-        screenName: string;
-        bio: string;
-        nicknames?: string[];
-    };
-
-    /** Optional Instagram profile */
-    instagramProfile?: {
-        id: string;
-        username: string;
-        bio: string;
-        nicknames?: string[];
-    };
-
-    /** Optional SimsAI profile */
-    simsaiProfile?: {
-        id: string;
-        username: string;
-        screenName: string;
-        bio: string;
-    };
-
-    /** Optional NFT prompt */
-    nft?: {
-        prompt: string;
-    };
-
-    /**Optinal Parent characters to inherit information from */
-    extends?: string[];
-
-    twitterSpaces?: TwitterSpaceDecisionOptions;
-};
-
-export interface TwitterSpaceDecisionOptions {
-    maxSpeakers?: number;
-    topics?: string[];
-    typicalDurationMinutes?: number;
-    idleKickTimeoutMs?: number;
-    minIntervalBetweenSpacesMinutes?: number;
-    businessHoursOnly?: boolean;
-    randomChance?: number;
-    enableIdleMonitor?: boolean;
-    enableSttTts?: boolean;
-    enableRecording?: boolean;
-    voiceId?: string;
-    sttLanguage?: string;
-    speakerMaxDurationMs?: number;
-}
-
-/**
- * Interface for database operations
- */
-export interface IDatabaseAdapter {
-    /** Database instance */
-    db: any;
-
-    /** Optional initialization */
-    init(): Promise<void>;
-
-    /** Close database connection */
-    close(): Promise<void>;
-
-    /** Get account by ID */
-    getAccountById(userId: UUID): Promise<Account | null>;
-
-    /** Create new account */
-    createAccount(account: Account): Promise<boolean>;
-
-    /** Get memories matching criteria */
-    getMemories(params: {
-        roomId: UUID;
-        count?: number;
-        unique?: boolean;
-        tableName: string;
-        agentId: UUID;
-        start?: number;
-        end?: number;
-    }): Promise<Memory[]>;
-
-    getMemoryById(id: UUID): Promise<Memory | null>;
-
-    getMemoriesByIds(ids: UUID[], tableName?: string): Promise<Memory[]>;
-
-    getMemoriesByRoomIds(params: {
-        tableName: string;
-        agentId: UUID;
-        roomIds: UUID[];
-        limit?: number;
-    }): Promise<Memory[]>;
-
-    getCachedEmbeddings(params: {
-        query_table_name: string;
-        query_threshold: number;
-        query_input: string;
-        query_field_name: string;
-        query_field_sub_name: string;
-        query_match_count: number;
-    }): Promise<{ embedding: number[]; levenshtein_score: number }[]>;
-
-    log(params: {
-        body: { [key: string]: unknown };
-        userId: UUID;
-        roomId: UUID;
-        type: string;
-    }): Promise<void>;
-
-    getActorDetails(params: { roomId: UUID }): Promise<Actor[]>;
-
-    searchMemories(params: {
-        tableName: string;
-        agentId: UUID;
-        roomId: UUID;
-        embedding: number[];
-        match_threshold: number;
-        match_count: number;
-        unique: boolean;
-    }): Promise<Memory[]>;
-
-    updateGoalStatus(params: {
-        goalId: UUID;
-        status: GoalStatus;
-    }): Promise<void>;
-
-    searchMemoriesByEmbedding(
-        embedding: number[],
-        params: {
-            match_threshold?: number;
-            count?: number;
-            roomId?: UUID;
-            agentId?: UUID;
-            unique?: boolean;
-            tableName: string;
-        },
-    ): Promise<Memory[]>;
-
-    createMemory(
-        memory: Memory,
-        tableName: string,
-        unique?: boolean,
-    ): Promise<void>;
-
-    removeMemory(memoryId: UUID, tableName: string): Promise<void>;
-
-    removeAllMemories(roomId: UUID, tableName: string): Promise<void>;
-
-    countMemories(
-        roomId: UUID,
-        unique?: boolean,
-        tableName?: string,
-    ): Promise<number>;
-
-    getGoals(params: {
-        agentId: UUID;
-        roomId: UUID;
-        userId?: UUID | null;
-        onlyInProgress?: boolean;
-        count?: number;
-    }): Promise<Goal[]>;
-
-    updateGoal(goal: Goal): Promise<void>;
-
-    createGoal(goal: Goal): Promise<void>;
-
-    removeGoal(goalId: UUID): Promise<void>;
-
-    removeAllGoals(roomId: UUID): Promise<void>;
-
-    getRoom(roomId: UUID): Promise<UUID | null>;
-
-    createRoom(roomId?: UUID): Promise<UUID>;
-
-    removeRoom(roomId: UUID): Promise<void>;
-
-    getRoomsForParticipant(userId: UUID): Promise<UUID[]>;
-
-    getRoomsForParticipants(userIds: UUID[]): Promise<UUID[]>;
-
-    addParticipant(userId: UUID, roomId: UUID): Promise<boolean>;
-
-    removeParticipant(userId: UUID, roomId: UUID): Promise<boolean>;
-
-    getParticipantsForAccount(userId: UUID): Promise<Participant[]>;
-
-    getParticipantsForRoom(roomId: UUID): Promise<UUID[]>;
-
-    getParticipantUserState(
-        roomId: UUID,
-        userId: UUID,
-    ): Promise<"FOLLOWED" | "MUTED" | null>;
-
-    setParticipantUserState(
-        roomId: UUID,
-        userId: UUID,
-        state: "FOLLOWED" | "MUTED" | null,
-    ): Promise<void>;
-
-    createRelationship(params: { userA: UUID; userB: UUID }): Promise<boolean>;
-
-    getRelationship(params: {
-        userA: UUID;
-        userB: UUID;
-    }): Promise<Relationship | null>;
-
-    getRelationships(params: { userId: UUID }): Promise<Relationship[]>;
-
-    getKnowledge(params: {
-        id?: UUID;
-        agentId: UUID;
-        limit?: number;
-        query?: string;
-        conversationContext?: string;
-    }): Promise<RAGKnowledgeItem[]>;
-
-    searchKnowledge(params: {
-        agentId: UUID;
-        embedding: Float32Array;
-        match_threshold: number;
-        match_count: number;
-        searchText?: string;
-    }): Promise<RAGKnowledgeItem[]>;
-
-    createKnowledge(knowledge: RAGKnowledgeItem): Promise<void>;
-    removeKnowledge(id: UUID): Promise<void>;
-    clearKnowledge(agentId: UUID, shared?: boolean): Promise<void>;
-}
-
-export interface IDatabaseCacheAdapter {
-    getCache(params: {
-        agentId: UUID;
-        key: string;
-    }): Promise<string | undefined>;
-
-    setCache(params: {
-        agentId: UUID;
-        key: string;
-        value: string;
-    }): Promise<boolean>;
-
-    deleteCache(params: { agentId: UUID; key: string }): Promise<boolean>;
-}
-
-export interface IMemoryManager {
-    runtime: IAgentRuntime;
-    tableName: string;
-    constructor: Function;
-
-    addEmbeddingToMemory(memory: Memory): Promise<Memory>;
-
-    getMemories(opts: {
-        roomId: UUID;
-        count?: number;
-        unique?: boolean;
-        start?: number;
-        end?: number;
-    }): Promise<Memory[]>;
-
-    getCachedEmbeddings(
-        content: string,
-    ): Promise<{ embedding: number[]; levenshtein_score: number }[]>;
-
-    getMemoryById(id: UUID): Promise<Memory | null>;
-    getMemoriesByRoomIds(params: {
-        roomIds: UUID[];
-        limit?: number;
-    }): Promise<Memory[]>;
-    searchMemoriesByEmbedding(
-        embedding: number[],
-        opts: {
-            match_threshold?: number;
-            count?: number;
-            roomId: UUID;
-            unique?: boolean;
-        },
-    ): Promise<Memory[]>;
-
-    createMemory(memory: Memory, unique?: boolean): Promise<void>;
-
-    removeMemory(memoryId: UUID): Promise<void>;
-
-    removeAllMemories(roomId: UUID): Promise<void>;
-
-    countMemories(roomId: UUID, unique?: boolean): Promise<number>;
-}
-
-export interface IRAGKnowledgeManager {
-    runtime: IAgentRuntime;
-    tableName: string;
-
-    getKnowledge(params: {
-        query?: string;
-        id?: UUID;
-        limit?: number;
-        conversationContext?: string;
-        agentId?: UUID;
-    }): Promise<RAGKnowledgeItem[]>;
-    createKnowledge(item: RAGKnowledgeItem): Promise<void>;
-    removeKnowledge(id: UUID): Promise<void>;
-    searchKnowledge(params: {
-        agentId: UUID;
-        embedding: Float32Array | number[];
-        match_threshold?: number;
-        match_count?: number;
-        searchText?: string;
-    }): Promise<RAGKnowledgeItem[]>;
-    clearKnowledge(shared?: boolean): Promise<void>;
-    processFile(file: {
-        path: string;
-        content: string;
-        type: "pdf" | "md" | "txt";
-        isShared: boolean;
-    }): Promise<void>;
-    cleanupDeletedKnowledgeFiles(): Promise<void>;
-    generateScopedId(path: string, isShared: boolean): UUID;
-}
-
-export type CacheOptions = {
-    expires?: number;
-};
-
-export enum CacheStore {
-    REDIS = "redis",
-    DATABASE = "database",
-    FILESYSTEM = "filesystem",
-}
-
-export interface ICacheManager {
-    get<T = unknown>(key: string): Promise<T | undefined>;
-    set<T>(key: string, value: T, options?: CacheOptions): Promise<void>;
-    delete(key: string): Promise<void>;
-}
-
-export abstract class Service {
-    private static instance: Service | null = null;
-
-    static get serviceType(): ServiceType {
-        throw new Error("Service must implement static serviceType getter");
-    }
-
-    public static getInstance<T extends Service>(): T {
-        if (!Service.instance) {
-            Service.instance = new (this as any)();
-        }
-        return Service.instance as T;
-    }
-
-    get serviceType(): ServiceType {
-        return (this.constructor as typeof Service).serviceType;
-    }
-
-    // Add abstract initialize method that must be implemented by derived classes
-    abstract initialize(runtime: IAgentRuntime): Promise<void>;
-}
-
-export interface IAgentRuntime {
-    // Properties
-    agentId: UUID;
-    serverUrl: string;
-    databaseAdapter: IDatabaseAdapter;
-    character: Character;
-    providers: Provider[];
-    actions: Action[];
-    evaluators: Evaluator[];
-    plugins: Plugin[];
-
-    fetch?: typeof fetch | null;
-    call: (name: string, args: any) => Promise<any>;
-
-    messageManager: IMemoryManager;
-    descriptionManager: IMemoryManager;
-    documentsManager: IMemoryManager;
-    knowledgeManager: IMemoryManager;
-    ragKnowledgeManager: IRAGKnowledgeManager;
-    loreManager: IMemoryManager;
-
-    cacheManager: ICacheManager;
-
-    services: Map<ServiceType, Service>;
-    // any could be EventEmitter
-    // but I think the real solution is forthcoming as a base client interface
-    clients: Record<string, any>;
-
-    verifiableInferenceAdapter?: IVerifiableInferenceAdapter | null;
-
-    initialize(): Promise<void>;
-
-    registerMemoryManager(manager: IMemoryManager): void;
-
-    getMemoryManager(name: string): IMemoryManager | null;
-
-    getService<T extends Service>(service: ServiceType): T | null;
-
-    registerService(service: Service): void;
-
-    getSetting(key: string): string | null;
-
-    // Methods
-    getConversationLength(): number;
-
-    processActions(
-        message: Memory,
-        responses: Memory[],
-        state?: State,
-        callback?: HandlerCallback,
-    ): Promise<void>;
-
-    evaluate(
-        message: Memory,
-        state?: State,
-        didRespond?: boolean,
-        callback?: HandlerCallback,
-    ): Promise<string[] | null>;
-
-    ensureParticipantExists(userId: UUID, roomId: UUID): Promise<void>;
-
-    ensureUserExists(
-        userId: UUID,
-        userName: string | null,
-        name: string | null,
-        source: string | null,
-    ): Promise<void>;
-
-    registerAction(action: Action): void;
-
-    ensureConnection(
-        userId: UUID,
-        roomId: UUID,
-        userName?: string,
-        userScreenName?: string,
-        source?: string,
-    ): Promise<void>;
-
-    ensureParticipantInRoom(userId: UUID, roomId: UUID): Promise<void>;
-
-    ensureRoomExists(roomId: UUID): Promise<void>;
-
-    composeState(
-        message: Memory,
-        additionalKeys?: { [key: string]: unknown },
-    ): Promise<State>;
-
-    updateRecentMessageState(state: State): Promise<State>;
-}
-
-export interface IImageDescriptionService extends Service {
-    describeImage(
-        imageUrl: string,
-    ): Promise<{ title: string; description: string }>;
-}
-
-export interface ITranscriptionService extends Service {
-    transcribeAttachment(audioBuffer: ArrayBuffer): Promise<string | null>;
-    transcribeAttachmentLocally(
-        audioBuffer: ArrayBuffer,
-    ): Promise<string | null>;
-    transcribe(audioBuffer: ArrayBuffer): Promise<string | null>;
-    transcribeLocally(audioBuffer: ArrayBuffer): Promise<string | null>;
-}
-
-export interface IVideoService extends Service {
-    isVideoUrl(url: string): boolean;
-    fetchVideoInfo(url: string): Promise<Media>;
-    downloadVideo(videoInfo: Media): Promise<string>;
-    processVideo(url: string, runtime: IAgentRuntime): Promise<Media>;
-}
-
-export interface ITextGenerationService extends Service {
-    initializeModel(): Promise<void>;
-    queueMessageCompletion(
-        context: string,
-        temperature: number,
-        stop: string[],
-        frequency_penalty: number,
-        presence_penalty: number,
-        max_tokens: number,
-    ): Promise<any>;
-    queueTextCompletion(
-        context: string,
-        temperature: number,
-        stop: string[],
-        frequency_penalty: number,
-        presence_penalty: number,
-        max_tokens: number,
-    ): Promise<string>;
-    getEmbeddingResponse(input: string): Promise<number[] | undefined>;
-}
-
-export interface IBrowserService extends Service {
-    closeBrowser(): Promise<void>;
-    getPageContent(
-        url: string,
-        runtime: IAgentRuntime,
-    ): Promise<{ title: string; description: string; bodyContent: string }>;
-}
-
-export interface ISpeechService extends Service {
-    getInstance(): ISpeechService;
-    generate(runtime: IAgentRuntime, text: string): Promise<Readable>;
-}
-
-export interface IPdfService extends Service {
-    getInstance(): IPdfService;
-    convertPdfToText(pdfBuffer: Buffer): Promise<string>;
-}
-
-export interface IAwsS3Service extends Service {
-    uploadFile(
-        imagePath: string,
-        subDirectory: string,
-        useSignedUrl: boolean,
-        expiresIn: number,
-    ): Promise<{
-        success: boolean;
-        url?: string;
-        error?: string;
-    }>;
-    generateSignedUrl(fileName: string, expiresIn: number): Promise<string>;
-}
-
-export interface UploadIrysResult {
-    success: boolean;
-    url?: string;
-    error?: string;
-    data?: any;
-}
-
-export interface DataIrysFetchedFromGQL {
-    success: boolean;
-    data: any;
-    error?: string;
-}
-
-export interface GraphQLTag {
-    name: string;
-    values: any[];
-}
-
-export enum IrysMessageType {
-    REQUEST = "REQUEST",
-    DATA_STORAGE = "DATA_STORAGE",
-    REQUEST_RESPONSE = "REQUEST_RESPONSE",
-}
-
-export enum IrysDataType {
-    FILE = "FILE",
-    IMAGE = "IMAGE",
-    OTHER = "OTHER",
-}
-
-export interface IrysTimestamp {
-    from: number;
-    to: number;
-}
-
-export interface IIrysService extends Service {
-    getDataFromAnAgent(
-        agentsWalletPublicKeys: string[],
-        tags: GraphQLTag[],
-        timestamp: IrysTimestamp,
-    ): Promise<DataIrysFetchedFromGQL>;
-    workerUploadDataOnIrys(
-        data: any,
-        dataType: IrysDataType,
-        messageType: IrysMessageType,
-        serviceCategory: string[],
-        protocol: string[],
-        validationThreshold: number[],
-        minimumProviders: number[],
-        testProvider: boolean[],
-        reputation: number[],
-    ): Promise<UploadIrysResult>;
-    providerUploadDataOnIrys(
-        data: any,
-        dataType: IrysDataType,
-        serviceCategory: string[],
-        protocol: string[],
-    ): Promise<UploadIrysResult>;
-}
-
-export interface ITeeLogService extends Service {
-    getInstance(): ITeeLogService;
-    log(
-        agentId: string,
-        roomId: string,
-        userId: string,
-        type: string,
-        content: string,
-    ): Promise<boolean>;
-}
-
-export enum ServiceType {
-    IMAGE_DESCRIPTION = "image_description",
-    TRANSCRIPTION = "transcription",
-    VIDEO = "video",
-    TEXT_GENERATION = "text_generation",
-    BROWSER = "browser",
-    SPEECH_GENERATION = "speech_generation",
-    PDF = "pdf",
-    INTIFACE = "intiface",
-    AWS_S3 = "aws_s3",
-    BUTTPLUG = "buttplug",
-    SLACK = "slack",
-    VERIFIABLE_LOGGING = "verifiable_logging",
-    IRYS = "irys",
-    TEE_LOG = "tee_log",
-    GOPLUS_SECURITY = "goplus_security",
-    WEB_SEARCH = "web_search",
-    EMAIL_AUTOMATION = "email_automation",
-}
-
-export enum LoggingLevel {
-    DEBUG = "debug",
-    VERBOSE = "verbose",
-    NONE = "none",
-}
-
-export type KnowledgeItem = {
-    id: UUID;
-    content: Content;
-};
-
-export interface RAGKnowledgeItem {
-    id: UUID;
-    agentId: UUID;
-    content: {
-        text: string;
-        metadata?: {
-            isMain?: boolean;
-            isChunk?: boolean;
-            originalId?: UUID;
-            chunkIndex?: number;
-            source?: string;
-            type?: string;
-            isShared?: boolean;
-            [key: string]: unknown;
-        };
-    };
-    embedding?: Float32Array;
-    createdAt?: number;
-    similarity?: number;
-    score?: number;
-}
-
-export interface ActionResponse {
-    like: boolean;
-    retweet: boolean;
-    quote?: boolean;
-    reply?: boolean;
-}
-
-export interface ISlackService extends Service {
-    client: any;
-}
-
-/**
- * Available verifiable inference providers
- */
-export enum VerifiableInferenceProvider {
-    RECLAIM = "reclaim",
-    OPACITY = "opacity",
-    PRIMUS = "primus",
-}
-
-/**
- * Options for verifiable inference
- */
-export interface VerifiableInferenceOptions {
-    /** Custom endpoint URL */
-    endpoint?: string;
-    /** Custom headers */
-    headers?: Record<string, string>;
-    /** Provider-specific options */
-    providerOptions?: Record<string, unknown>;
-}
-
-/**
- * Result of a verifiable inference request
- */
-export interface VerifiableInferenceResult {
-    /** Generated text */
-    text: string;
-    /** Proof */
-    proof: any;
-    /** Proof id */
-    id?: string;
-    /** Provider information */
-    provider: VerifiableInferenceProvider;
-    /** Timestamp */
-    timestamp: number;
-}
-
-/**
- * Interface for verifiable inference adapters
- */
-export interface IVerifiableInferenceAdapter {
-    options: any;
-    /**
-     * Generate text with verifiable proof
-     * @param context The input text/prompt
-     * @param modelClass The model class/name to use
-     * @param options Additional provider-specific options
-     * @returns Promise containing the generated text and proof data
-     */
-    generateText(
-        context: string,
-        modelClass: string,
-        options?: VerifiableInferenceOptions,
-    ): Promise<VerifiableInferenceResult>;
-
-    /**
-     * Verify the proof of a generated response
-     * @param result The result containing response and proof to verify
-     * @returns Promise indicating if the proof is valid
-     */
-    verifyProof(result: VerifiableInferenceResult): Promise<boolean>;
-}
-
-export enum TokenizerType {
-    Auto = "auto",
-    TikToken = "tiktoken",
-}
-
-export enum TranscriptionProvider {
-    OpenAI = "openai",
-    Deepgram = "deepgram",
-    Local = "local",
-}
-
-export enum ActionTimelineType {
-    ForYou = "foryou",
-    Following = "following",
-}
-export enum KnowledgeScope {
-    SHARED = "shared",
-    PRIVATE = "private",
-}
-
-export enum CacheKeyPrefix {
-    KNOWLEDGE = "knowledge",
-}
-
-export interface DirectoryItem {
-    directory: string;
-    shared?: boolean;
-}
-
-export interface ChunkRow {
-    id: string;
-    // Add other properties if needed
-}
+// WIP
+export type ClientHandler = (
+  client: Client,
+  roomId: UUID,
+  user: Account,
+  text: string,
+  metadata: MemoryMetadata
+) => Promise<void>;

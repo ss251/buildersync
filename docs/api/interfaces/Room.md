@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / Room
+[@elizaos/runtime v0.1.7](../index.md) / Room
 
 # Interface: Room
 

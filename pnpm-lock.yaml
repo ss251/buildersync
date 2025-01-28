@@ -184,7 +184,7 @@ importers:
       '@elizaos/client-xmtp':
         specifier: workspace:*
         version: link:../packages/client-xmtp
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../packages/core
       '@elizaos/plugin-0g':
@@ -545,7 +545,7 @@ importers:
 
   client:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../packages/core
       '@radix-ui/react-avatar':
@@ -766,7 +766,7 @@ importers:
 
   packages/adapter-mongodb:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       mongodb:
@@ -803,7 +803,7 @@ importers:
       '@electric-sql/pglite':
         specifier: ^0.2.15
         version: 0.2.16
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       whatwg-url:
@@ -816,7 +816,7 @@ importers:
 
   packages/adapter-postgres:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@types/pg':
@@ -832,7 +832,7 @@ importers:
 
   packages/adapter-qdrant:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@qdrant/js-client-rest':
@@ -845,7 +845,7 @@ importers:
 
   packages/adapter-redis:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       ioredis:
@@ -867,7 +867,7 @@ importers:
 
   packages/adapter-sqlite:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@types/better-sqlite3':
@@ -895,7 +895,7 @@ importers:
 
   packages/adapter-sqljs:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@types/sql.js':
@@ -917,7 +917,7 @@ importers:
 
   packages/adapter-supabase:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@supabase/supabase-js':
@@ -939,7 +939,7 @@ importers:
 
   packages/client-alexa:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-node':
@@ -964,7 +964,7 @@ importers:
 
   packages/client-auto:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@types/body-parser':
@@ -995,7 +995,7 @@ importers:
 
   packages/client-deva:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       glob:
@@ -1014,7 +1014,7 @@ importers:
 
   packages/client-direct:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-image-generation':
@@ -1075,7 +1075,7 @@ importers:
       '@discordjs/voice':
         specifier: 0.17.0
         version: 0.17.0(@discordjs/opus@https://codeload.github.com/discordjs/opus/tar.gz/8c727579cd81831f6e866f8d82781b4bfa5f4063(encoding@0.1.13))(bufferutil@4.0.9)(ffmpeg-static@5.2.0)(utf-8-validate@6.0.5)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-node':
@@ -1106,7 +1106,7 @@ importers:
 
   packages/client-eliza-home:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -1122,7 +1122,7 @@ importers:
 
   packages/client-farcaster:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@neynar/nodejs-sdk':
@@ -1138,7 +1138,7 @@ importers:
 
   packages/client-github:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@octokit/rest':
@@ -1166,7 +1166,7 @@ importers:
 
   packages/client-instagram:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       glob:
@@ -1194,7 +1194,7 @@ importers:
 
   packages/client-lens:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@lens-protocol/client':
@@ -1219,7 +1219,7 @@ importers:
 
   packages/client-simsai:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       glob:
@@ -1235,7 +1235,7 @@ importers:
 
   packages/client-slack:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@ffmpeg-installer/ffmpeg':
@@ -1287,7 +1287,7 @@ importers:
 
   packages/client-telegram:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@telegraf/types':
@@ -1309,7 +1309,7 @@ importers:
 
   packages/client-telegram-account:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       glob:
@@ -1337,7 +1337,7 @@ importers:
 
   packages/client-twitter:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       agent-twitter-client:
@@ -1368,7 +1368,7 @@ importers:
 
   packages/client-xmtp:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@xmtp/agent-starter':
@@ -1584,7 +1584,7 @@ importers:
       '@0glabs/0g-ts-sdk':
         specifier: 0.2.1
         version: 0.2.1(bufferutil@4.0.9)(ethers@6.13.4(bufferutil@4.0.9)(utf-8-validate@6.0.5))(utf-8-validate@6.0.5)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       ethers:
@@ -1603,7 +1603,7 @@ importers:
       '@0x/swap-ts-sdk':
         specifier: 2.1.1
         version: 2.1.1(@types/express@5.0.0)(@types/node@22.12.0)(encoding@0.1.13)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       zod:
@@ -1616,7 +1616,7 @@ importers:
 
   packages/plugin-3d-generation:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -1635,7 +1635,7 @@ importers:
       '@abstract-foundation/agw-client':
         specifier: 1.0.1
         version: 1.0.1(abitype@1.0.8(typescript@4.9.5)(zod@3.24.1))(typescript@4.9.5)(viem@2.21.58(bufferutil@4.0.9)(typescript@4.9.5)(utf-8-validate@6.0.5)(zod@3.24.1))
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -1663,7 +1663,7 @@ importers:
       '@coinbase/cdp-langchain':
         specifier: ^0.0.11
         version: 0.0.11(@coinbase/coinbase-sdk@0.15.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@6.0.5)(zod@3.23.8))(bufferutil@4.0.9)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.23.8))(typescript@5.7.3)(utf-8-validate@6.0.5)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@langchain/core':
@@ -1691,7 +1691,7 @@ importers:
       '@cosmjs/stargate':
         specifier: 0.31.3
         version: 0.31.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@types/js-yaml':
@@ -1767,7 +1767,7 @@ importers:
       '@alloralabs/allora-sdk':
         specifier: ^0.1.0
         version: 0.1.0
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       node-cache:
@@ -1788,7 +1788,7 @@ importers:
       '@coinbase/coinbase-sdk':
         specifier: ^0.15.0
         version: 0.15.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@6.0.5)(zod@3.23.8)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -1867,7 +1867,7 @@ importers:
       '@anyone-protocol/anyone-client':
         specifier: ^0.4.3
         version: 0.4.3
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -1889,7 +1889,7 @@ importers:
 
   packages/plugin-apro:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       ai-agent-sdk-js:
@@ -1908,7 +1908,7 @@ importers:
       '@aptos-labs/ts-sdk':
         specifier: ^1.26.0
         version: 1.33.2
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       bignumber.js:
@@ -1935,7 +1935,7 @@ importers:
       '@elizaos/adapter-sqlite':
         specifier: ^0.1.8
         version: 0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(whatwg-url@14.1.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@ethersproject/abi':
@@ -2002,7 +2002,7 @@ importers:
 
   packages/plugin-arthera:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2021,7 +2021,7 @@ importers:
       '@asterai/client':
         specifier: 0.1.6
         version: 0.1.6
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       bignumber.js:
@@ -2064,7 +2064,7 @@ importers:
       '@coral-xyz/anchor':
         specifier: 0.28.0
         version: 0.28.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -2085,7 +2085,7 @@ importers:
 
   packages/plugin-avail:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-trustdb':
@@ -2107,7 +2107,7 @@ importers:
 
   packages/plugin-avalanche:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       whatwg-url:
@@ -2120,7 +2120,7 @@ importers:
 
   packages/plugin-b2:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2135,7 +2135,7 @@ importers:
       '@binance/connector':
         specifier: ^3.6.0
         version: 3.6.1(bufferutil@4.0.9)(utf-8-validate@6.0.5)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       zod:
@@ -2160,7 +2160,7 @@ importers:
       '@coral-xyz/anchor':
         specifier: 0.28.0
         version: 0.28.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@solana/spl-token':
@@ -2218,7 +2218,7 @@ importers:
       '@elizaos/client-twitter':
         specifier: workspace:*
         version: link:../client-twitter
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2230,7 +2230,7 @@ importers:
 
   packages/plugin-bnb:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@lifi/data-types':
@@ -2269,7 +2269,7 @@ importers:
 
   packages/plugin-bootstrap:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2281,13 +2281,13 @@ importers:
 
   packages/plugin-chainbase:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
 
   packages/plugin-coinbase:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@types/jsonwebtoken':
@@ -2318,7 +2318,7 @@ importers:
 
   packages/plugin-coingecko:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -2330,7 +2330,7 @@ importers:
 
   packages/plugin-coinmarketcap:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -2346,7 +2346,7 @@ importers:
 
   packages/plugin-conflux:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       cive:
@@ -2367,7 +2367,7 @@ importers:
       '@cosmjs/stargate':
         specifier: ^0.32.4
         version: 0.32.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@skip-go/client':
@@ -2398,7 +2398,7 @@ importers:
 
   packages/plugin-cronos:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       whatwg-url:
@@ -2411,7 +2411,7 @@ importers:
 
   packages/plugin-cronoszkevm:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2426,7 +2426,7 @@ importers:
 
   packages/plugin-dcap:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-sgx':
@@ -2448,7 +2448,7 @@ importers:
 
   packages/plugin-depin:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -2463,7 +2463,7 @@ importers:
 
   packages/plugin-devin:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -2479,7 +2479,7 @@ importers:
 
   packages/plugin-dexscreener:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2491,7 +2491,7 @@ importers:
 
   packages/plugin-di:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       inversify:
@@ -2522,7 +2522,7 @@ importers:
 
   packages/plugin-dkg:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       dkg.js:
@@ -2541,7 +2541,7 @@ importers:
 
   packages/plugin-echochambers:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-node':
@@ -2553,7 +2553,7 @@ importers:
       '@elizaos/adapter-postgres':
         specifier: workspace:^
         version: link:../adapter-postgres
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:^
         version: link:../core
       mail-notifier:
@@ -2590,7 +2590,7 @@ importers:
 
   packages/plugin-email-automation:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       handlebars:
@@ -2627,7 +2627,7 @@ importers:
 
   packages/plugin-ethstorage:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-trustdb':
@@ -2649,7 +2649,7 @@ importers:
 
   packages/plugin-evm:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -2673,7 +2673,7 @@ importers:
 
   packages/plugin-flow:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@onflow/config':
@@ -2725,7 +2725,7 @@ importers:
 
   packages/plugin-football:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2737,7 +2737,7 @@ importers:
 
   packages/plugin-form:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-evm':
@@ -2753,7 +2753,7 @@ importers:
 
   packages/plugin-fuel:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       form-data:
@@ -2774,7 +2774,7 @@ importers:
 
   packages/plugin-gelato:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -2795,7 +2795,7 @@ importers:
 
   packages/plugin-genlayer:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       genlayer-js:
@@ -2807,7 +2807,7 @@ importers:
 
   packages/plugin-giphy:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -2822,7 +2822,7 @@ importers:
 
   packages/plugin-gitbook:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2831,7 +2831,7 @@ importers:
 
   packages/plugin-gitcoin-passport:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2843,7 +2843,7 @@ importers:
 
   packages/plugin-goat:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@goat-sdk/adapter-vercel-ai':
@@ -2873,7 +2873,7 @@ importers:
 
   packages/plugin-goplus:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -2892,7 +2892,7 @@ importers:
 
   packages/plugin-holdstation:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       node-cache:
@@ -2917,7 +2917,7 @@ importers:
       '@coinbase/coinbase-sdk':
         specifier: ^0.15.0
         version: 0.15.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@6.0.5)(zod@3.23.8)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -2993,7 +2993,7 @@ importers:
 
   packages/plugin-hyperliquid:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       hyperliquid:
@@ -3024,7 +3024,7 @@ importers:
       '@dfinity/principal':
         specifier: 2.1.3
         version: 2.1.3
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -3043,7 +3043,7 @@ importers:
 
   packages/plugin-image-generation:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -3055,7 +3055,7 @@ importers:
 
   packages/plugin-imgflip:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -3067,7 +3067,7 @@ importers:
 
   packages/plugin-initia:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -3089,7 +3089,7 @@ importers:
       '@elizaos/adapter-sqlite':
         specifier: 0.1.7-alpha.2
         version: 0.1.7-alpha.2(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(whatwg-url@14.1.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       injective-sdk-client-ts:
@@ -3138,7 +3138,7 @@ importers:
 
   packages/plugin-intiface:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       buttplug:
@@ -3156,7 +3156,7 @@ importers:
 
   packages/plugin-iq6900:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@solana/web3.js':
@@ -3172,7 +3172,7 @@ importers:
 
   packages/plugin-irys:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@irys/upload':
@@ -3194,7 +3194,7 @@ importers:
 
   packages/plugin-lensNetwork:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@lens-network/sdk':
@@ -3221,7 +3221,7 @@ importers:
 
   packages/plugin-letzai:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -3230,7 +3230,7 @@ importers:
 
   packages/plugin-lightning:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -3249,7 +3249,7 @@ importers:
 
   packages/plugin-lit:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@ethersproject/abstract-provider':
@@ -3307,7 +3307,7 @@ importers:
 
   packages/plugin-massa:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@massalabs/massa-web3':
@@ -3322,7 +3322,7 @@ importers:
 
   packages/plugin-mina:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       bignumber.js:
@@ -3349,7 +3349,7 @@ importers:
 
   packages/plugin-mind-network:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       mind-randgen-sdk:
@@ -3361,7 +3361,7 @@ importers:
 
   packages/plugin-moralis:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -3379,7 +3379,7 @@ importers:
       '@aptos-labs/ts-sdk':
         specifier: ^1.26.0
         version: 1.33.2
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       bignumber:
@@ -3410,7 +3410,7 @@ importers:
 
   packages/plugin-multiversx:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@multiversx/sdk-core':
@@ -3446,7 +3446,7 @@ importers:
 
   packages/plugin-near:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@ref-finance/ref-sdk':
@@ -3473,7 +3473,7 @@ importers:
 
   packages/plugin-news:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -3485,7 +3485,7 @@ importers:
 
   packages/plugin-nft-collections:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-evm':
@@ -3525,7 +3525,7 @@ importers:
 
   packages/plugin-nft-generation:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-image-generation':
@@ -3600,7 +3600,7 @@ importers:
       '@echogarden/speex-resampler-wasm':
         specifier: 0.2.1
         version: 0.2.1
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@huggingface/transformers':
@@ -3757,7 +3757,7 @@ importers:
 
   packages/plugin-nvidia-nim:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -3812,7 +3812,7 @@ importers:
 
   packages/plugin-obsidian:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       file-type-checker:
@@ -3842,7 +3842,7 @@ importers:
       '@cosmjs/stargate':
         specifier: ^0.32.4
         version: 0.32.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -3878,7 +3878,7 @@ importers:
 
   packages/plugin-opacity:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       dotenv:
@@ -3891,7 +3891,7 @@ importers:
 
   packages/plugin-open-weather:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -3906,7 +3906,7 @@ importers:
 
   packages/plugin-openai:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -3922,7 +3922,7 @@ importers:
 
   packages/plugin-primus:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@primuslabs/zktls-core-sdk':
@@ -3937,7 +3937,7 @@ importers:
 
   packages/plugin-pyth-data:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: ^0.1.7
         version: 0.1.8(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@pythnetwork/client':
@@ -4013,7 +4013,7 @@ importers:
       '@avnu/avnu-sdk':
         specifier: ^2.1.1
         version: 2.1.1(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@6.0.5))(qs@6.14.0)(starknet@6.18.0(encoding@0.1.13))
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-trustdb':
@@ -4034,7 +4034,7 @@ importers:
 
   packages/plugin-quick-intel:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -4046,7 +4046,7 @@ importers:
       '@elizaos/client-twitter':
         specifier: workspace:*
         version: link:../client-twitter
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-solana':
@@ -4101,7 +4101,7 @@ importers:
 
   packages/plugin-router-nitro:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -4119,7 +4119,7 @@ importers:
 
   packages/plugin-sei:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       form-data:
@@ -4140,7 +4140,7 @@ importers:
 
   packages/plugin-sgx:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -4156,7 +4156,7 @@ importers:
       '@coral-xyz/anchor':
         specifier: 0.28.0
         version: 0.28.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -4207,7 +4207,7 @@ importers:
       '@coral-xyz/anchor':
         specifier: 0.28.0
         version: 0.28.0(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -4258,7 +4258,7 @@ importers:
 
   packages/plugin-solana-v2:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -4307,7 +4307,7 @@ importers:
 
   packages/plugin-spheron:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@spheron/protocol-sdk':
@@ -4332,7 +4332,7 @@ importers:
       '@0xsquid/squid-types':
         specifier: 0.1.122
         version: 0.1.122(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10)
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       ethers:
@@ -4353,7 +4353,7 @@ importers:
 
   packages/plugin-stargaze:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -4371,7 +4371,7 @@ importers:
       '@avnu/avnu-sdk':
         specifier: 2.1.1
         version: 2.1.1(ethers@6.13.5(bufferutil@4.0.9)(utf-8-validate@6.0.5))(qs@6.14.0)(starknet@6.18.0(encoding@0.1.13))
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-trustdb':
@@ -4401,7 +4401,7 @@ importers:
 
   packages/plugin-story:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@pinata/sdk':
@@ -4423,7 +4423,7 @@ importers:
 
   packages/plugin-sui:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@mysten/sui':
@@ -4453,7 +4453,7 @@ importers:
 
   packages/plugin-suno:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: ^0.1.0
         version: 0.1.8(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
     devDependencies:
@@ -4475,7 +4475,7 @@ importers:
 
   packages/plugin-tee:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@phala/dstack-sdk':
@@ -4508,7 +4508,7 @@ importers:
 
   packages/plugin-tee-log:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-sgx':
@@ -4533,7 +4533,7 @@ importers:
 
   packages/plugin-tee-marlin:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -4545,7 +4545,7 @@ importers:
 
   packages/plugin-tee-verifiable-log:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@elizaos/plugin-tee':
@@ -4582,7 +4582,7 @@ importers:
 
   packages/plugin-thirdweb:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       thirdweb:
@@ -4597,7 +4597,7 @@ importers:
 
   packages/plugin-ton:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@ton/crypto':
@@ -4621,7 +4621,7 @@ importers:
 
   packages/plugin-trikon:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -4646,7 +4646,7 @@ importers:
 
   packages/plugin-trustdb:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       dompurify:
@@ -4671,7 +4671,7 @@ importers:
 
   packages/plugin-tts:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       langdetect:
@@ -4686,7 +4686,7 @@ importers:
 
   packages/plugin-twitter:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       agent-twitter-client:
@@ -4702,7 +4702,7 @@ importers:
 
   packages/plugin-udio:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: ^0.1.0
         version: 0.1.8(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
     devDependencies:
@@ -4724,7 +4724,7 @@ importers:
 
   packages/plugin-video-generation:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -4736,7 +4736,7 @@ importers:
 
   packages/plugin-web-search:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@tavily/core':
@@ -4754,7 +4754,7 @@ importers:
 
   packages/plugin-whatsapp:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       axios:
@@ -4779,7 +4779,7 @@ importers:
 
   packages/plugin-zerion:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -4789,7 +4789,7 @@ importers:
 
   packages/plugin-zilliqa:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       '@goat-sdk/adapter-vercel-ai':
@@ -4825,7 +4825,7 @@ importers:
 
   packages/plugin-zksync-era:
     dependencies:
-      '@elizaos/core':
+      '@elizaos/runtime':
         specifier: workspace:*
         version: link:../core
       tsup:
@@ -7246,10 +7246,10 @@ packages:
     peerDependencies:
       whatwg-url: 7.1.0
 
-  '@elizaos/core@0.1.7-alpha.2':
+  '@elizaos/runtime@0.1.7-alpha.2':
     resolution: {integrity: sha512-gNvFw/Xnv4dlcfmmKxRa+baKq6en4TitAjUGvo8LgAUkSk156A0fffJ0lAsc1rX8zMB5NsIqdvMCbwKxDd54OQ==}
 
-  '@elizaos/core@0.1.8':
+  '@elizaos/runtime@0.1.8':
     resolution: {integrity: sha512-nQT5uQTQVTZJ3CrhVkK4dRdP/RuBMiOv/u3JZvMJGhY45z0Gy0gY27NEn/BBlJ4Ymt/SmqtXOul/x2hOeQen4Q==}
 
   '@elizaos/plugin-tee@0.1.8':
@@ -33466,7 +33466,7 @@ snapshots:
 
   '@elizaos/adapter-sqlite@0.1.7-alpha.2(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(whatwg-url@14.1.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))':
     dependencies:
-      '@elizaos/core': 0.1.7-alpha.2(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))
+      '@elizaos/runtime': 0.1.7-alpha.2(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))
       '@types/better-sqlite3': 7.6.12
       better-sqlite3: 11.6.0
       sqlite-vec: 0.1.6
@@ -33497,7 +33497,7 @@ snapshots:
 
   '@elizaos/adapter-sqlite@0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(whatwg-url@14.1.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
-      '@elizaos/core': 0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+      '@elizaos/runtime': 0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@types/better-sqlite3': 7.6.12
       better-sqlite3: 11.6.0
       sqlite-vec: 0.1.6
@@ -33526,7 +33526,7 @@ snapshots:
       - vue
       - ws
 
-  '@elizaos/core@0.1.7-alpha.2(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))':
+  '@elizaos/runtime@0.1.7-alpha.2(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))':
     dependencies:
       '@ai-sdk/anthropic': 0.0.56(zod@3.23.8)
       '@ai-sdk/google': 0.0.55(zod@3.23.8)
@@ -33577,7 +33577,7 @@ snapshots:
       - vue
       - ws
 
-  '@elizaos/core@0.1.8(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@elizaos/runtime@0.1.8(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.73.0(encoding@0.1.13)(zod@3.23.8)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@ai-sdk/anthropic': 0.0.56(zod@3.23.8)
       '@ai-sdk/google': 0.0.55(zod@3.23.8)
@@ -33629,7 +33629,7 @@ snapshots:
       - vue
       - ws
 
-  '@elizaos/core@0.1.8(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@elizaos/runtime@0.1.8(@google-cloud/vertexai@1.9.2(encoding@0.1.13))(@langchain/core@0.3.36(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)))(@langchain/groq@0.1.3(@langchain/core@0.3.36(openai@4.80.1(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.1)))(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(sswr@2.1.0(svelte@5.19.3))(svelte@5.19.3)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@ai-sdk/anthropic': 0.0.56(zod@3.23.8)
       '@ai-sdk/google': 0.0.55(zod@3.23.8)
@@ -33681,7 +33681,7 @@ snapshots:
       - vue
       - ws
 
-  '@elizaos/core@0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@elizaos/runtime@0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@ai-sdk/anthropic': 0.0.56(zod@3.23.8)
       '@ai-sdk/google': 0.0.55(zod@3.23.8)
@@ -33733,7 +33733,7 @@ snapshots:
       - vue
       - ws
 
-  '@elizaos/core@0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))':
+  '@elizaos/runtime@0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))':
     dependencies:
       '@ai-sdk/anthropic': 0.0.56(zod@3.23.8)
       '@ai-sdk/google': 0.0.55(zod@3.23.8)
@@ -33787,7 +33787,7 @@ snapshots:
 
   '@elizaos/plugin-tee@0.1.8(@swc/core@1.10.11(@swc/helpers@0.5.15))(axios@1.7.9)(bufferutil@4.0.9)(encoding@0.1.13)(jiti@2.4.2)(postcss@8.5.1)(react@19.0.0)(tsx@4.19.2)(typescript@5.7.3)(utf-8-validate@6.0.5)(whatwg-url@7.1.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(yaml@2.7.0)(zod@3.24.1)':
     dependencies:
-      '@elizaos/core': 0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))
+      '@elizaos/runtime': 0.1.8(axios@1.7.9)(encoding@0.1.13)(react@19.0.0)(ws@8.18.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))
       '@phala/dstack-sdk': 0.1.7(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@6.0.5)(zod@3.24.1)
       '@solana/spl-token': 0.4.9(@solana/web3.js@1.95.8(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5))(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@6.0.5)
       '@solana/web3.js': 1.95.8(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5)

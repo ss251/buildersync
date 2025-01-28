@@ -1,5 +1,5 @@
 import { Anthropic } from '@anthropic-ai/sdk';
-import { createFunction, GenerateTextParams, IAgentRuntime } from '@elizaos/core';
+import { createFunction, GenerateTextParams, IAgentRuntime } from '@elizaos/runtime';
 
 // TODO: CONFIGURE THIS
 // https://docs.anthropic.com/en/docs/about-claude/models

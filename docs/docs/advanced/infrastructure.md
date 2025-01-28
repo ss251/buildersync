@@ -120,7 +120,7 @@ const supabaseConfig = {
 The memory system uses vector embeddings for semantic search:
 
 ```typescript
-import { embed } from "@elizaos/core";
+import { embed } from "@elizaos/runtime";
 
 async function storeMemory(runtime: IAgentRuntime, content: string) {
     const embedding = await embed(runtime, message.content.text);
@@ -138,7 +138,7 @@ async function storeMemory(runtime: IAgentRuntime, content: string) {
 ### Memory Retrieval
 
 ```typescript
-import { embed } from "@elizaos/core";
+import { embed } from "@elizaos/runtime";
 
 async function searchMemories(runtime: IAgentRuntime, query: string) {
     const embedding = await embed(runtime, query);

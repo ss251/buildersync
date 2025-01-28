@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / IMemoryManager
+[@elizaos/runtime v0.1.7](../index.md) / IMemoryManager
 
 # Interface: IMemoryManager
 

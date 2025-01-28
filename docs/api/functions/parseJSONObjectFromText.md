@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / parseJSONObjectFromText
+[@elizaos/runtime v0.1.7](../index.md) / parseJSONObjectFromText
 
 # Function: parseJSONObjectFromText()
 

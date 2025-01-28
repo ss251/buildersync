@@ -6,7 +6,7 @@ sidebar_position: 1
 
 ## Core Components
 
-- **@elizaos/core**: Central framework and shared functionality
+- **@elizaos/runtime**: Central framework and shared functionality
 - **@elizaos/agent**: Agent runtime and management
 - **@elizaos/adapters**: Database implementations (PostgreSQL, SQLite, etc.)
 - **@elizaos/clients**: Platform integrations (Discord, Telegram, etc.)
@@ -39,7 +39,7 @@ graph TD
 
 ```
 # Install core package
-pnpm add @elizaos/core
+pnpm add @elizaos/runtime
 
 # Install specific adapters
 pnpm add @elizaos/adapter-postgres

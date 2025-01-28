@@ -19,7 +19,7 @@
         "dist"
     ],
     "dependencies": {
-        "@elizaos/core": "workspace:*",
+        "@elizaos/runtime": "workspace:*",
         "axios": "^1.0.0"
     },
     "devDependencies": {

@@ -15,7 +15,7 @@
         ]
     },
     "moduleNameMapper": {
-        "^@elizaos/core$": "<rootDir>/packages/core/src/index.ts",
+        "^@elizaos/runtime$": "<rootDir>/packages/core/src/index.ts",
         "^@elizaos/(.*)$": "<rootDir>/packages/$1/src/index.ts"
     }
 }

@@ -6,7 +6,7 @@ sidebar_position: 1
 
 ## Overview
 
-The Core Package (`@elizaos/core`) provides the fundamental building blocks of Eliza's architecture, handling essential functionalities like:
+The Core Package (`@elizaos/runtime`) provides the fundamental building blocks of Eliza's architecture, handling essential functionalities like:
 
 - Memory Management & Semantic Search
 - Message Processing & Generation
@@ -18,7 +18,7 @@ The Core Package (`@elizaos/core`) provides the fundamental building blocks of E
 ## Installation
 
 ```bash
-pnpm add @elizaos/core
+pnpm add @elizaos/runtime
 ```
 
 ## Key Components
@@ -28,7 +28,7 @@ pnpm add @elizaos/core
 The AgentRuntime class serves as the central nervous system of Eliza, orchestrating all major components:
 
 ```typescript
-import { AgentRuntime } from "@elizaos/core";
+import { AgentRuntime } from "@elizaos/runtime";
 
 const runtime = new AgentRuntime({
     // Core configuration

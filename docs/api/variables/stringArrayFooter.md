@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / stringArrayFooter
+[@elizaos/runtime v0.1.7](../index.md) / stringArrayFooter
 
 # Variable: stringArrayFooter
 

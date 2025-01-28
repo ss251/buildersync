@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / hasEnvVariable
+[@elizaos/runtime v0.1.7](../index.md) / hasEnvVariable
 
 # Function: hasEnvVariable()
 

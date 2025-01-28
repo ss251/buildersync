@@ -142,7 +142,7 @@ Click on that link or open a browser window to that location. Once you do that y
 ### SQLite (Recommended for Development)
 
 ```typescript
-import { SqliteDatabaseAdapter } from "@elizaos/core/adapters";
+import { SqliteDatabaseAdapter } from "@elizaos/runtime/adapters";
 import Database from "better-sqlite3";
 
 const db = new SqliteDatabaseAdapter(new Database("./dev.db"));
@@ -151,7 +151,7 @@ const db = new SqliteDatabaseAdapter(new Database("./dev.db"));
 ### In-Memory Database (for Testing)
 
 ```typescript
-import { SqlJsDatabaseAdapter } from "@elizaos/core/adapters";
+import { SqlJsDatabaseAdapter } from "@elizaos/runtime/adapters";
 
 const db = new SqlJsDatabaseAdapter(new Database(":memory:"));
 ```
@@ -191,7 +191,7 @@ pnpm test:sqljs
 ### Writing Tests
 
 ```typescript
-import { runAiTest } from "@elizaos/core/test_resources";
+import { runAiTest } from "@elizaos/runtime/test_resources";
 
 describe("Feature Test", () => {
     beforeEach(async () => {
@@ -219,7 +219,7 @@ describe("Feature Test", () => {
 
 ```typescript
 // plugins/my-plugin/src/index.ts
-import { Plugin } from "@elizaos/core/types";
+import { Plugin } from "@elizaos/runtime/types";
 
 export const myPlugin: Plugin = {
     name: "my-plugin",

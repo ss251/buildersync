@@ -12,7 +12,7 @@
         },
         "build": {
             "outputs": ["dist/**"],
-            "dependsOn": ["^@elizaos/core#build"]
+            "dependsOn": ["^@elizaos/runtime#build"]
         },
         "@elizaos/client-direct#build": {
             "outputs": ["dist/**"],
@@ -38,7 +38,7 @@
         },
         "@elizaos/plugin-tee-verifiable-log#build": {
             "outputs": ["dist/**"],
-            "dependsOn": ["@elizaos/core#build", "@elizaos/plugin-tee#build"]
+            "dependsOn": ["@elizaos/runtime#build", "@elizaos/plugin-tee#build"]
         },
         "@elizaos/plugin-evm#build": {
             "outputs": ["dist/**"],

@@ -5,8 +5,8 @@ import {
     elizaLogger,
     ServiceType,
     composeRandomUser,
-} from "@elizaos/core";
-import { getEmbeddingZeroVector } from "@elizaos/core";
+} from "@elizaos/runtime";
+import { getEmbeddingZeroVector } from "@elizaos/runtime";
 import {
     type Content,
     type HandlerCallback,
@@ -17,9 +17,9 @@ import {
     type State,
     type UUID,
     type Media,
-} from "@elizaos/core";
-import { stringToUuid } from "@elizaos/core";
-import { generateMessageResponse, generateShouldRespond } from "@elizaos/core";
+} from "@elizaos/runtime";
+import { stringToUuid } from "@elizaos/runtime";
+import { generateMessageResponse, generateShouldRespond } from "@elizaos/runtime";
 import {
     telegramMessageHandlerTemplate,
     telegramShouldRespondTemplate,

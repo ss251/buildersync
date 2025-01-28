@@ -5,7 +5,7 @@ import {
     DatabaseAdapter,
     elizaLogger,
     type IDatabaseCacheAdapter,
-} from "@elizaos/core";
+} from "@elizaos/runtime";
 import type {
     Account,
     Actor,
@@ -17,7 +17,7 @@ import type {
     UUID,
     RAGKnowledgeItem,
     ChunkRow,
-} from "@elizaos/core";
+} from "@elizaos/runtime";
 import type { Database } from "better-sqlite3";
 import { v4 } from "uuid";
 import { load } from "./sqlite_vec.ts";

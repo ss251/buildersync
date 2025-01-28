@@ -21,7 +21,7 @@ import {
     stringToUuid,
     settings,
     type IAgentRuntime,
-} from "@elizaos/core";
+} from "@elizaos/runtime";
 import { createApiRouter } from "./api.ts";
 import * as fs from "fs";
 import * as path from "path";

@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / ActionResponse
+[@elizaos/runtime v0.1.7](../index.md) / ActionResponse
 
 # Interface: ActionResponse
 

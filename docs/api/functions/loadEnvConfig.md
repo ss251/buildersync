@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / loadEnvConfig
+[@elizaos/runtime v0.1.7](../index.md) / loadEnvConfig
 
 # Function: loadEnvConfig()
 

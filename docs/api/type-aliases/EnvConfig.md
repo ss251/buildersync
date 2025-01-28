@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / EnvConfig
+[@elizaos/runtime v0.1.7](../index.md) / EnvConfig
 
 # Type Alias: EnvConfig
 

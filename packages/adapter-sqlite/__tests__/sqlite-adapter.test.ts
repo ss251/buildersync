@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SqliteDatabaseAdapter } from '../src';
-import { type UUID, elizaLogger } from '@elizaos/core';
+import { type UUID, elizaLogger } from '@elizaos/runtime';
 import type Database from 'better-sqlite3';
 import { load } from '../src/sqlite_vec';
 
 // Mock the elizaLogger
-vi.mock('@elizaos/core', async () => {
-    const actual = await vi.importActual('@elizaos/core');
+vi.mock('@elizaos/runtime', async () => {
+    const actual = await vi.importActual('@elizaos/runtime');
     return {
         ...actual as any,
         elizaLogger: {

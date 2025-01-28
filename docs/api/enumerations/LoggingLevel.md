@@ -1,4 +1,4 @@
-[@elizaos/core v0.1.7](../index.md) / LoggingLevel
+[@elizaos/runtime v0.1.7](../index.md) / LoggingLevel
 
 # Enumeration: LoggingLevel
 

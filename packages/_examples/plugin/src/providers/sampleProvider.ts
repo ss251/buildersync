@@ -4,7 +4,7 @@ import {
     type Memory,
     type State,
     elizaLogger,
-} from "@elizaos/core";
+} from "@elizaos/runtime";
 
 export const sampleProvider: Provider = {
     // biome-ignore lint: 'runtime' is intentionally unused
