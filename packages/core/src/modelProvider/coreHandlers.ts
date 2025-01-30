@@ -1,3 +1,7 @@
+// Disclaimer: This file is to be removed once the new provider is implemented
+// All ModelProviders would have to move to their separate folders
+
+
 // External SDK/Provider imports
 import { bedrock } from "@ai-sdk/amazon-bedrock";
 import { createAnthropic } from "@ai-sdk/anthropic";
