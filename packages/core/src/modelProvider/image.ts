@@ -5,6 +5,7 @@ import elizaLogger from "../logger";
 import { getImageModelSettings } from "../models";
 import { type IAgentRuntime, ModelProviderName } from "../types";
 import type { ImageGenerationParams, ImageGenerationResult } from "./interfaces";
+import { type IImageDescriptionService, ServiceType } from "../types";
 
 interface TogetherAIImageResponse {
     data: Array<{ url: string }>;
@@ -306,4 +307,23 @@ export const generateImage = async (
         elizaLogger.error('Image generation failed:', error);
         return { success: false, error };
     }
+};
+
+export const generateCaption = async (
+    data: { imageUrl: string },
+    runtime: IAgentRuntime
+): Promise<{ title: string; description: string }> => {
+    const imageDescriptionService = runtime.getService<IImageDescriptionService>(
+        ServiceType.IMAGE_DESCRIPTION
+    );
+    
+    if (!imageDescriptionService) {
+        throw new Error("Image description service not found");
+    }
+
+    const resp = await imageDescriptionService.describeImage(data.imageUrl);
+    return {
+        title: resp.title.trim(),
+        description: resp.description.trim(),
+    };
 };

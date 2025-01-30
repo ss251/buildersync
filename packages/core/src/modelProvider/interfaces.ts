@@ -1,5 +1,17 @@
 import type { ZodSchema } from "zod";
 import type { IAgentRuntime, ModelClass, IVerifiableInferenceAdapter, VerifiableInferenceOptions, TelemetrySettings, ModelProviderName } from "../types";
+import {
+    generateObject as aiGenerateObject,
+    type StepResult as AIStepResult,
+    type CoreTool,
+    type GenerateObjectResult
+} from "ai";
+
+
+export type Tool = CoreTool<any, any>;
+export type StepResult = AIStepResult<any>;
+export type { GenerateObjectResult };
+
 
 /**
  * Configuration options for generating objects with a model.
