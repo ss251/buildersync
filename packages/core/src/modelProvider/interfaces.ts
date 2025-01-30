@@ -6,6 +6,8 @@ import {
     type CoreTool,
     type GenerateObjectResult
 } from "ai";
+import { elizaLogger } from "../logger";
+import { CircuitBreaker } from "./utils";
 
 
 export type Tool = CoreTool<any, any>;
@@ -97,3 +99,46 @@ export interface ImageGenerationResult {
     data?: string[];
     error?: any;
 }
+
+
+// Base interface with common methods
+interface BaseModelProvider {
+    initialize(config: Record<string, unknown>): void;
+    isFailed(): boolean;
+}
+
+// Individual generation method interfaces
+interface TextGeneration {
+    generateText(
+        context: string,
+        modelSettings: IModelSettings,
+        runtime: IAgentRuntime
+    ): Promise<string>;
+}
+
+interface ImageGeneration {
+    generateImage(
+        params: ImageGenerationParams,
+        runtime: IAgentRuntime
+    ): Promise<ImageGenerationResult>;
+}
+
+interface ObjectGeneration {
+    generateObject<T>(
+        options: GenerationOptions
+    ): Promise<GenerateObjectResult<T>>;
+}
+
+// Combine them to require at least one generation method
+export type ModelProvider = BaseModelProvider & (
+    TextGeneration |
+    ImageGeneration |
+    ObjectGeneration |
+    (TextGeneration & ImageGeneration) |
+    (TextGeneration & ObjectGeneration) |
+    (ImageGeneration & ObjectGeneration) |
+    (TextGeneration & ImageGeneration & ObjectGeneration)
+);
+
+
+

@@ -164,3 +164,159 @@ export function getCloudflareGatewayBaseURL(
 
     return baseURL;
 }
+
+
+/**
+ * CircuitBreaker implements the Circuit Breaker pattern to prevent repeated failures
+ * and provide fault tolerance in distributed systems.
+ * 
+ * States:
+ * - CLOSED: Normal operation, requests are allowed through
+ * - OPEN: Failure threshold exceeded, requests are blocked
+ * - HALF_OPEN: Testing if service has recovered
+ * 
+ * @example
+ * ```typescript
+ * const breaker = new CircuitBreaker({ failureThreshold: 3, resetTimeout: 30000 });
+ * 
+ * try {
+ *   const result = await breaker.execute(async () => {
+ *     return await someAsyncOperation();
+ *   });
+ * } catch (error) {
+ *   // Handle error
+ * }
+ * ```
+ */
+export class CircuitBreaker {
+    /** Current state of the circuit breaker */
+    private state: 'OPEN' | 'CLOSED' | 'HALF_OPEN' = 'CLOSED';
+    
+    /** Counter for consecutive failures */
+    private failureCount = 0;
+    
+    /** Maximum number of failures before opening the circuit */
+    private readonly failureThreshold: number;
+    
+    /** Time in milliseconds before attempting to reset the circuit */
+    private readonly resetTimeout: number;
+
+    /**
+     * Creates a new CircuitBreaker instance
+     * 
+     * @param config - Configuration object for the circuit breaker
+     * @param config.failureThreshold - Number of failures before opening the circuit
+     * @param config.resetTimeout - Time in milliseconds before attempting to reset
+     * 
+     * @throws {Error} If configuration parameters are invalid
+     */
+    constructor(config: Record<string, unknown>) {
+        if (!config) {
+            throw new Error('Configuration is required');
+        }
+
+        this.failureThreshold = (config.failureThreshold as number) || 5;
+        this.resetTimeout = (config.resetTimeout as number) || 60000;
+
+        if (this.failureThreshold <= 0) {
+            throw new Error('Failure threshold must be greater than 0');
+        }
+        if (this.resetTimeout <= 0) {
+            throw new Error('Reset timeout must be greater than 0');
+        }
+    }
+
+    /**
+     * Executes an operation with circuit breaker protection
+     * 
+     * @template T - The type of the operation's result
+     * @param operation - The async operation to execute
+     * @returns Promise resolving to the operation's result
+     * @throws {Error} If circuit is OPEN or if operation fails
+     * 
+     * @example
+     * ```typescript
+     * const result = await breaker.execute(async () => {
+     *   const response = await fetch('https://api.example.com/data');
+     *   return response.json();
+     * });
+     * ```
+     */
+    async execute<T>(operation: () => Promise<T>): Promise<T> {
+        if (this.state === 'OPEN') {
+            throw new Error('Circuit breaker is OPEN - requests are blocked');
+        }
+
+        try {
+            const result = await operation();
+            this.onSuccess();
+            return result;
+        } catch (error) {
+            this.onFailure();
+            throw error;
+        }
+    }
+
+    /**
+     * Handles successful operation execution
+     * Resets failure count and ensures circuit is CLOSED
+     * 
+     * @private
+     */
+    private onSuccess(): void {
+        this.failureCount = 0;
+        this.state = 'CLOSED';
+    }
+
+    /**
+     * Handles operation failures
+     * Increments failure count and opens circuit if threshold is reached
+     * 
+     * @private
+     */
+    private onFailure(): void {
+        this.failureCount++;
+        if (this.failureCount >= this.failureThreshold) {
+            this.state = 'OPEN';
+            this.scheduleReset();
+        }
+    }
+
+    /**
+     * Schedules a reset attempt after the configured timeout
+     * 
+     * @private
+     */
+    private scheduleReset(): void {
+        setTimeout(() => {
+            this.state = 'HALF_OPEN';
+        }, this.resetTimeout);
+    }
+
+    /**
+     * Gets the current state of the circuit breaker
+     * 
+     * @returns The current state ('OPEN', 'CLOSED', or 'HALF_OPEN')
+     */
+    getState(): string {
+        return this.state;
+    }
+
+    /**
+     * Gets the current failure count
+     * 
+     * @returns The number of consecutive failures
+     */
+    getFailureCount(): number {
+        return this.failureCount;
+    }
+
+    /**
+     * Manually resets the circuit breaker to its initial state
+     * Useful for testing or administrative purposes
+     */
+    reset(): void {
+        this.state = 'CLOSED';
+        this.failureCount = 0;
+    }
+}
