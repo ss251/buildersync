@@ -517,6 +517,9 @@ importers:
       '@elizaos/plugin-zksync-era':
         specifier: workspace:*
         version: link:../packages/plugin-zksync-era
+      mongodb:
+        specifier: ^6.3.0
+        version: 6.13.0(socks@2.8.3)
       readline:
         specifier: 1.3.0
         version: 1.3.0
@@ -9076,13 +9079,13 @@ packages:
   '@keplr-wallet/types@0.11.64':
     resolution: {integrity: sha512-GgzeLDHHfZFyne3O7UIfFHj/uYqVbxAZI31RbBwt460OBbvwQzjrlZwvJW3vieWRAgxKSITjzEDBl2WneFTQdQ==}
 
-  '@keplr-wallet/types@0.12.177':
-    resolution: {integrity: sha512-MulQ2feUOYBIJkQrENXgCkksQUIeACp+tDBDzX9LRwkO2bX5VrWK5hm5Dd6gD7RoXaubDm4JbyaHjcMwCP1JTw==}
+  '@keplr-wallet/types@0.12.178':
+    resolution: {integrity: sha512-luhkHjt8AnoMPi4gBxFL1hRUrwX8XPfMJhAneKhOmIJSpMYhoPrZKj8vrkCf3Vqhe4V17zA9/hP1uAy4Uz5YzA==}
     peerDependencies:
       starknet: ^6
 
-  '@keplr-wallet/unit@0.12.177':
-    resolution: {integrity: sha512-5GGvXj3DAMDqsiBhuEZWRevLqilWCZinehLRTHb3EQWaJBDYly+jwYjtI/rHCzS4AWuh7SmmrIlCVjB3fEMyig==}
+  '@keplr-wallet/unit@0.12.178':
+    resolution: {integrity: sha512-koHFt7iDY9JiVs8nZECGaNpJY7j7HNKAPjA4U0S+LKJ3Bm7YefAqXCb7tbYkUrNhELHM4jrxOpdDMuSlhvLCUw==}
 
   '@kikobeats/time-span@1.0.5':
     resolution: {integrity: sha512-txRAdmi35N1wnsLS1AO5mTlbY5Cv5/61WXqek2y3L9Q7u4mgdUVq819so5xe753hL5gYeLzlWoJ/VJfXg9nx8g==}
@@ -36271,14 +36274,14 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@keplr-wallet/types@0.12.177(starknet@6.18.0(encoding@0.1.13))':
+  '@keplr-wallet/types@0.12.178(starknet@6.18.0(encoding@0.1.13))':
     dependencies:
       long: 4.0.0
       starknet: 6.18.0(encoding@0.1.13)
 
-  '@keplr-wallet/unit@0.12.177(starknet@6.18.0(encoding@0.1.13))':
+  '@keplr-wallet/unit@0.12.178(starknet@6.18.0(encoding@0.1.13))':
     dependencies:
-      '@keplr-wallet/types': 0.12.177(starknet@6.18.0(encoding@0.1.13))
+      '@keplr-wallet/types': 0.12.178(starknet@6.18.0(encoding@0.1.13))
       big-integer: 1.6.52
       utility-types: 3.11.0
     transitivePeerDependencies:
@@ -42934,7 +42937,7 @@ snapshots:
       '@cosmjs/tendermint-rpc': 0.32.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@injectivelabs/core-proto-ts': 0.0.21
       '@injectivelabs/sdk-ts': 1.14.5(@types/react@19.0.8)(bufferutil@4.0.9)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(utf-8-validate@5.0.10)
-      '@keplr-wallet/unit': 0.12.177(starknet@6.18.0(encoding@0.1.13))
+      '@keplr-wallet/unit': 0.12.178(starknet@6.18.0(encoding@0.1.13))
       '@solana/wallet-adapter-base': 0.9.23(@solana/web3.js@1.92.3(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@5.0.10))
       axios: 1.7.9
       cosmjs-types: 0.9.0
