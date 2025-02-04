@@ -155,9 +155,11 @@ import { ankrPlugin } from "@elizaos/plugin-ankr";
 import { formPlugin } from "@elizaos/plugin-form";
 import { MongoClient } from "mongodb";
 import { quickIntelPlugin } from "@elizaos/plugin-quick-intel";
+import { talentPlugin } from "@elizaos/plugin-talent";
 
 import { trikonPlugin } from "@elizaos/plugin-trikon";
 import arbitragePlugin from "@elizaos/plugin-arbitrage";
+import { buildersync } from "./buildersync.character";
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
@@ -1295,6 +1297,10 @@ export async function createAgent(
             getSecret(character, "ARBITRAGE_BUNDLE_EXECUTOR_ADDRESS")
                 ? arbitragePlugin
                 : null,
+            getSecret(character, "TALENT_API_KEY") &&
+            getSecret(character, "TALENT_API_URL") 
+                ? talentPlugin
+                : null,
         ]
             .flat()
             .filter(Boolean),
@@ -1466,7 +1472,10 @@ const startAgents = async () => {
     let serverPort = Number.parseInt(settings.SERVER_PORT || "3000");
     const args = parseArguments();
     const charactersArg = args.characters || args.character;
-    let characters = [defaultCharacter];
+
+
+    // Initialize with buildersync and default character
+    let characters = [buildersync, defaultCharacter];
 
     if (process.env.IQ_WALLET_ADDRESS && process.env.IQSOlRPC) {
         characters = await loadCharacterFromOnchain();
@@ -1475,7 +1484,8 @@ const startAgents = async () => {
     const notOnchainJson = !onchainJson || onchainJson == "null";
 
     if ((notOnchainJson && charactersArg) || hasValidRemoteUrls()) {
-        characters = await loadCharacters(charactersArg);
+        const loadedCharacters = await loadCharacters(charactersArg);
+        characters = [...characters, ...loadedCharacters];
     }
 
     // Normalize characters for injectable plugins
@@ -1483,7 +1493,7 @@ const startAgents = async () => {
 
     try {
         for (const character of characters) {
-            await startAgent(character, directClient);
+            await startAgent(character as Character, directClient);
         }
     } catch (error) {
         elizaLogger.error("Error starting agents:", error);
