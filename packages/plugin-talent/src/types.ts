@@ -100,10 +100,14 @@ export interface TalentPassport {
 export interface PassportsResponse {
   passports: TalentPassport[];
   meta?: {
-    total_pages: number;
-    current_page: number;
     total_count: number;
+    page: number;
+    per_page: number;
   };
+}
+
+export interface SinglePassportResponse {
+  passport: TalentPassport;
 }
 
 export interface BuilderMatchRequest {

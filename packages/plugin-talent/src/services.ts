@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { TalentAPIConfig, TalentPassport, PassportsResponse } from './types';
+import { TalentAPIConfig, TalentPassport, PassportsResponse, SinglePassportResponse } from './types';
 import { PassportCredential, PassportCredentialsResponse, PaginationParams, SearchOptions } from './types';
 import { getConfig } from './environment';
 
@@ -188,5 +188,23 @@ export class TalentService {
 
   async getBuildersByLocation(location: string): Promise<TalentPassport[]> {
     return this.searchBuilders(location);
+  }
+
+  async getPassportById(id: string): Promise<TalentPassport> {
+    try {
+      const response = await this.client.get<SinglePassportResponse>(`/api/v2/passports/${id}`);
+      if (response.data?.passport) {
+        return response.data.passport;
+      }
+      throw new Error(`Builder with ID "${id}" not found`);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        throw new Error('Authentication failed - please check your API key');
+      }
+      if (error.response?.status === 404) {
+        throw new Error(`Builder with ID "${id}" not found`);
+      }
+      throw error;
+    }
   }
 }

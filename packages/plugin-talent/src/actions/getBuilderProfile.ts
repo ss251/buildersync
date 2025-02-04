@@ -17,7 +17,10 @@ export const getBuilderProfileAction: Action = {
     'search for builder',
     'look up builder',
     'who is',
-    'tell me about'
+    'tell me about',
+    'talent id',
+    'find id',
+    '@'
   ],
   examples: [
     [
@@ -33,21 +36,21 @@ export const getBuilderProfileAction: Action = {
     [
       {
         user: 'user1',
-        content: { text: 'who is vitalik' }
+        content: { text: 'talent id 4458' }
       },
       {
         user: 'agent',
-        content: { text: 'Here is the builder profile for vitalik...' }
+        content: { text: 'Here is the builder profile for talent ID 4458...' }
       }
     ],
     [
       {
         user: 'user1',
-        content: { text: 'tell me about thescoho' }
+        content: { text: '@thescoho' }
       },
       {
         user: 'agent',
-        content: { text: 'Here is the builder profile for thescoho...' }
+        content: { text: 'Here is the builder profile for @thescoho...' }
       }
     ]
   ],
@@ -85,13 +88,18 @@ export const getBuilderProfileAction: Action = {
       }
 
       // Clean up the query - extract name after common patterns
-      const cleanQuery = query.match(/(?:for|of|about|is|builder|talent)\s+([^\s]+)/i)?.[1]?.trim() || 
+      const idMatch = query.match(/(?:id|#)\s*(\d+)/i)?.[1];
+      const cleanQuery = query.startsWith('@') ? query.slice(1) :
+                        idMatch || 
+                        query.match(/(?:for|of|about|is|builder|talent)\s+([^\s]+)/i)?.[1]?.trim() || 
                         query.replace(/(?:find|search|get|look up|tell me about)\s+(?:builder|talent|for|about)?\s*/i, '').trim();
       console.log('Cleaned query:', cleanQuery);
       
-      // Check if it's a direct wallet address lookup
+      // Check if it's a direct lookup
       const isAddress = cleanQuery.startsWith('0x');
+      const isId = idMatch !== undefined;
       console.log('Is wallet address?', isAddress);
+      console.log('Is talent ID?', isId);
       
       let passports: TalentPassport[] = [];
 
@@ -101,6 +109,12 @@ export const getBuilderProfileAction: Action = {
           // Direct wallet lookup
           const passport = await service.getPassport(cleanQuery);
           console.log('Found passport by address:', passport?.passport_id);
+          passports = [passport];
+        } else if (isId) {
+          console.log('📡 Fetching by talent ID:', cleanQuery);
+          // Direct ID lookup
+          const passport = await service.getPassportById(cleanQuery);
+          console.log('Found passport by ID:', passport?.passport_id);
           passports = [passport];
         } else {
           console.log('📡 Searching builders by name:', cleanQuery);
@@ -208,19 +222,43 @@ function formatSingleBuilderResponse(builder: any): string {
       if (cred.value === 'null') return false;
       if (cred.value === '0') return false;
       if (cred.value.startsWith('0 ')) return false;
+      if (cred.value === 'Level 0') return false;
+      if (cred.value === 'Humanity Score: 0') return false;
+      if (cred.value === 'Daily Allowance: 0') return false;
       
       return true;
     });
 
     if (validCredentials.length) {
+      // Group credentials by category
+      const groupedCreds = validCredentials.reduce((acc: any, cred: any) => {
+        const category = cred.category || 'Other';
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(cred);
+        return acc;
+      }, {});
+
       response += `\n🏆 Notable Credentials:\n`;
-      validCredentials.forEach((cred: any) => {
-        let credText = `• ${cred.name}`;
-        if (cred.value && typeof cred.value === 'string' && 
-            !cred.value.toLowerCase().includes(cred.name.toLowerCase())) {
-          credText += `: ${cred.value}`;
+      
+      // Order categories
+      const categoryOrder = ['Identity', 'Skills', 'Activity'];
+      const sortedCategories = [...categoryOrder, ...Object.keys(groupedCreds).filter(c => !categoryOrder.includes(c))];
+      
+      sortedCategories.forEach(category => {
+        if (groupedCreds[category]?.length) {
+          response += `\n${category}:\n`;
+          groupedCreds[category]
+            .sort((a: any, b: any) => b.score - a.score)
+            .forEach((cred: any) => {
+              let credText = `• ${cred.name}`;
+              if (cred.value && typeof cred.value === 'string' && 
+                  !cred.value.toLowerCase().includes(cred.name.toLowerCase()) &&
+                  cred.value !== 'Member') {
+                credText += `: ${cred.value}`;
+              }
+              response += `${credText}\n`;
+            });
         }
-        response += `${credText}\n`;
       });
     }
   }
