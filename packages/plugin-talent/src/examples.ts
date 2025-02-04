@@ -1,30 +1,30 @@
 export const searchBuilderExamples = [
   [{
     user: "user",
-    content: { text: "Find top builders in Southeast Asia" }
+    content: { text: "Show me top builders" }
   }, {
     user: "assistant",
-    content: { text: "Here are the top builders in Southeast Asia, ranked by their builder scores:\n\n1. Alice Chen\n   Builder Score: 95%\n   📍 Singapore\n   🛠️ Skills: blockchain, defi, solidity\n   💡 Full-stack blockchain developer focused on DeFi protocols...\n   ✓ Verified Builder" }
+    content: { text: "🚀 Found amazing builders! Check out these web3 talents:\n\n👤 Alice Chen\n💯 Score: 95\n🛠️ blockchain, defi, solidity ✓\n\n#web3builders #talentprotocol" }
   }],
   [{
     user: "user",
     content: { text: "Who are the best Solidity developers?" }
   }, {
     user: "assistant",
-    content: { text: "Here are the top Solidity developers, ranked by their builder scores:\n\n1. Bob Smith\n   Builder Score: 92%\n   📍 Remote\n   🛠️ Skills: solidity, smart contracts, defi\n   💡 Smart contract developer specializing in DeFi protocols...\n   ✓ Verified Builder" }
+    content: { text: "🔍 Found top Solidity devs!\n\n👤 Bob Smith\n💯 Score: 92\n🛠️ solidity, smart contracts, defi ✓\n\n#web3builders #solidity" }
   }],
   [{
     user: "user",
-    content: { text: "Find builders in Asia" }
+    content: { text: "Find DeFi builders" }
   }, {
     user: "assistant",
-    content: { text: "Here are the builders in Asia, ranked by their builder scores:\n\n1. Wei Zhang\n   Builder Score: 88%\n   📍 Hong Kong\n   🛠️ Skills: blockchain, defi, frontend\n   💡 Full-stack developer specializing in DeFi and NFT platforms...\n   ✓ Verified Builder" }
+    content: { text: "🌟 Check out these DeFi builders!\n\n👤 Sarah Kim\n💯 Score: 91\n🛠️ defi, solidity, smart contracts ✓\n\n#DeFi #web3builders" }
   }],
   [{
     user: "user",
-    content: { text: "Show me DeFi builders" }
+    content: { text: "Show me frontend developers" }
   }, {
     user: "assistant",
-    content: { text: "Here are the top DeFi builders, ranked by their builder scores:\n\n1. Sarah Kim\n   Builder Score: 91%\n   📍 Seoul\n   🛠️ Skills: defi, solidity, smart contracts\n   💡 DeFi protocol developer with focus on AMMs and lending platforms...\n   ✓ Verified Builder" }
+    content: { text: "💫 Top frontend devs in web3:\n\n👤 Wei Zhang\n💯 Score: 88\n🛠️ frontend, react, typescript ✓\n\n#web3frontend #talentprotocol" }
   }]
 ];

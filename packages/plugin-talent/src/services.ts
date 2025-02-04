@@ -1,92 +1,126 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { TalentAPIConfig, TalentPassport, PassportsResponse } from './types';
+import { PassportCredential, PassportCredentialsResponse, PaginationParams, SearchOptions } from './types';
+import { getConfig } from './environment';
 
 export class TalentService {
   private config: TalentAPIConfig;
+  private client: AxiosInstance;
 
-  constructor(config: TalentAPIConfig) {
-    this.config = {
-      ...config,
-      baseUrl: config.baseUrl.replace(/\/$/, '')
-    };
-  }
-
-  private get client() {
-    return axios.create({
-      baseURL: `${this.config.baseUrl}/api`,
-      headers: {
-        'X-API-KEY': this.config.apiKey,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-  }
-
-  async getPassport(identifier: string): Promise<TalentPassport> {
+  constructor(runtime: any) {
     try {
-      // Check if identifier is a number (talent ID) or address
-      const isAddress = identifier.startsWith('0x');
-      const endpoint = `/v2/passports/${identifier}`;
-      
-      console.log(`Fetching passport from ${endpoint}`);
-      const response = await this.client.get(endpoint);
-      console.log('Passport API Response:', JSON.stringify(response.data, null, 2));
-      
-      if (!response.data?.passport) {
-        throw new Error('Invalid passport response format');
-      }
-      return response.data.passport;
+      this.config = getConfig(runtime);
+      this.client = axios.create({
+        baseURL: this.config.baseUrl,
+        headers: {
+          'X-API-KEY': this.config.apiKey,
+          'Accept': 'application/json'
+        }
+      });
     } catch (error) {
-      if (error.response?.status === 401) {
-        throw new Error('Authentication failed - please check your API key');
-      }
-      if (error.response?.status === 404) {
-        throw new Error('Passport not found');
-      }
-      console.error('Passport API error:', error);
+      console.error('Failed to initialize TalentService:', error);
       throw error;
     }
   }
 
-  async searchBuilders(query: string): Promise<TalentPassport[]> {
-    console.log('Searching builders with query:', query);
+  async getPassport(identifier: string): Promise<TalentPassport> {
     try {
-      // Get all passports and filter client-side since API doesn't support search
-      const response = await this.client.get<PassportsResponse>('/v2/passports', {
-        params: { 
-          per_page: 40,
-          page: 1
+      // First try to get directly if it's an address
+      const isAddress = identifier.startsWith('0x');
+      
+      if (isAddress) {
+        try {
+          const response = await this.client.get(`/api/v2/passports/${identifier}`);
+          if (response.data?.passport) {
+            return response.data.passport;
+          }
+        } catch (e) {
+          if (e.response?.status !== 404) throw e;
+          // If 404, fall through to keyword search
+        }
+      }
+
+      // Search by display name
+      const searchResponse = await this.client.get<PassportsResponse>('/api/v2/passports', {
+        params: {
+          keyword: identifier,
+          per_page: 10
         }
       });
-      console.log('Search API Response:', JSON.stringify(response.data, null, 2));
-      
-      if (!response.data?.passports) {
-        console.error('Invalid response format:', response.data);
-        throw new Error('Invalid response format from search API');
-      }
-      
-      // Client-side filtering based on query
-      const query_lower = query.toLowerCase();
-      const filtered = response.data.passports.filter(passport => {
-        const { display_name, location, bio, tags } = passport.passport_profile;
-        return (
-          display_name?.toLowerCase().includes(query_lower) ||
-          location?.toLowerCase().includes(query_lower) ||
-          bio?.toLowerCase().includes(query_lower) ||
-          tags?.some(tag => tag.toLowerCase().includes(query_lower))
-        );
-      });
 
-      // Sort by score descending
-      return filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+      const matchingPassport = searchResponse.data?.passports?.find(p => 
+        p.passport_profile.display_name?.toLowerCase() === identifier.toLowerCase()
+      );
+
+      if (matchingPassport) {
+        return matchingPassport;
+      }
+
+      throw new Error(`Builder "${identifier}" not found`);
     } catch (error) {
       if (error.response?.status === 401) {
         throw new Error('Authentication failed - please check your API key');
       }
       if (error.response?.status === 404) {
-        throw new Error('Invalid API endpoint');
+        throw new Error(`Builder "${identifier}" not found`);
       }
-      console.error('Search API error:', error);
+      throw error;
+    }
+  }
+
+  async getPassportCredentials(passportId: string): Promise<PassportCredential[]> {
+    try {
+      const response = await this.client.get<PassportCredentialsResponse>('/api/v2/passport_credentials', {
+        params: { passport_id: passportId }
+      });
+      return response.data.passport_credentials;
+    } catch (error) {
+      console.error('Failed to fetch passport credentials:', error);
+      throw error;
+    }
+  }
+
+  async searchBuilders(options: SearchOptions | string): Promise<TalentPassport[]> {
+    try {
+      // Handle string query for backward compatibility
+      const searchOptions: SearchOptions = typeof options === 'string' ? { name: options } : options;
+
+      // Clean up the search query if it's a name search
+      if (searchOptions.name) {
+        // Extract name after "for" or "of" if present
+        const match = searchOptions.name.match(/(?:for|of)\s+([^\s]+)/i);
+        searchOptions.name = (match ? match[1] : searchOptions.name).trim();
+      }
+
+      const response = await this.client.get<PassportsResponse>('/api/v2/passports', {
+        params: {
+          keyword: searchOptions.name,
+          page: searchOptions.page || 1,
+          per_page: searchOptions.per_page || 10
+        }
+      });
+
+      let passports = response.data.passports;
+
+      // Apply additional filters if specified
+      if (searchOptions.skills?.length) {
+        passports = passports.filter(p => 
+          p.passport_profile.tags?.some(tag => 
+            searchOptions.skills!.some(skill => 
+              tag.toLowerCase().includes(skill.toLowerCase())
+            )
+          )
+        );
+      }
+
+      if (searchOptions.minScore) {
+        passports = passports.filter(p => (p.score || 0) >= searchOptions.minScore!);
+      }
+
+      // Sort by score descending
+      return passports.sort((a, b) => (b.score || 0) - (a.score || 0));
+    } catch (error) {
+      console.error('Search builders error:', error);
       throw error;
     }
   }
@@ -102,7 +136,7 @@ export class TalentService {
         'Accept': 'application/json'
       });
 
-      const response = await this.client.get<PassportsResponse>('/v2/passports', {
+      const response = await this.client.get<PassportsResponse>('/api/v2/passports', {
         params: {
           per_page: 100,
           page: 1

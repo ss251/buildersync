@@ -17,39 +17,92 @@ export interface PassportSocial {
   source: string;
 }
 
-export interface PassportCredential {
-  earned_at: string;
+export interface Passport {
   id: string;
-  category: string;
-  last_calculated_at: string;
-  name: string;
-  score: number;
-  type: string;
-  value: string;
-  max_score: number;
-}
-
-export interface TalentPassport {
-  score: number;
-  passport_id: number;
-  verified: boolean;
+  display_name: string;
+  wallet_address: string;
+  talent_id?: string;
+  bio?: string;
+  avatar_url?: string;
+  twitter_username?: string;
+  github_username?: string;
+  lens_handle?: string;
+  farcaster_username?: string;
+  total_score: number;
   activity_score: number;
   identity_score: number;
   skills_score: number;
-  human_checkmark: boolean;
-  main_wallet: string;
-  passport_profile: PassportProfile;
-  passport_socials: PassportSocial[];
-  verified_wallets: string[];
+}
+
+export interface PassportCredential {
+  earned_at: string | null;
+  id: string;
+  category: 'Activity' | 'Identity' | 'Skills';
+  last_calculated_at: string | null;
+  max_score: number;
+  name: string;
+  score: number;
+  type: string;
+  value: string | null;
+  calculating_score?: boolean;
+  onchain_at?: string | null;
+}
+
+export interface PassportCredentialsResponse {
+  passport_credentials: PassportCredential[];
+}
+
+export interface PaginationParams {
+  page?: number;
+  per_page?: number;
+}
+
+export interface BuilderProfile {
+  passport: Passport;
+  credentials: PassportCredential[];
+}
+
+export interface SearchOptions extends PaginationParams {
+  name?: string;
+  skills?: string[];
+  category?: string;
+  minScore?: number;
+}
+
+export interface TalentPassportProfile {
+  display_name: string;
+  location?: string;
+  bio?: string;
+  tags?: string[];
+  avatar_url?: string;
+  twitter_username?: string;
+  github_username?: string;
+  lens_handle?: string;
+  farcaster_username?: string;
+}
+
+export interface TalentPassport {
+  id: string;
+  passport_id: string;
+  wallet_address: string;
+  display_name: string;
+  score: number;
+  activity_score: number;
+  identity_score: number;
+  skills_score: number;
+  human_checkmark?: boolean;
+  verified_wallets?: string[];
+  main_wallet?: string;
+  passport_profile: TalentPassportProfile;
   credentials?: PassportCredential[];
 }
 
 export interface PassportsResponse {
   passports: TalentPassport[];
-  pagination: {
+  meta?: {
+    total_pages: number;
     current_page: number;
-    last_page: number;
-    total: number;
+    total_count: number;
   };
 }
 

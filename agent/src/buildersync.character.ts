@@ -1,4 +1,4 @@
-import { Character, CharacterConfig, ModelProviderName } from '@elizaos/core';
+import { Character, Clients, CharacterConfig, ModelProviderName } from '@elizaos/core';
 import { talentPlugin } from '@elizaos/plugin-talent';
 
 export const buildersync: CharacterConfig = {
@@ -21,7 +21,7 @@ My capabilities include:
   },
 
   plugins: [talentPlugin],
-  clients: [],
+  clients: [Clients.TWITTER],
 
   // Required fields
   lore: [
