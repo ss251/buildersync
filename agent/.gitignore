@@ -1,6 +1,7 @@
 *.ts
 !index.ts
 !character.ts
+!buildersync.character.ts
 .env
 *.env
 .env*
