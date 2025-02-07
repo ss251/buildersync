@@ -89,15 +89,17 @@ export const getBuilderProfileAction: Action = {
 
       // Clean up the query - extract name after common patterns
       const idMatch = query.match(/(?:id|#)\s*(\d+)/i)?.[1];
-      const cleanQuery = query.startsWith('@') ? query.slice(1) :
-                        idMatch || 
-                        query.match(/(?:for|of|about|is|builder|talent)\s+([^\s]+)/i)?.[1]?.trim() || 
-                        query.replace(/(?:find|search|get|look up|tell me about)\s+(?:builder|talent|for|about)?\s*/i, '').trim();
+      const cleanQuery = idMatch || // If we found an ID, use it directly
+        (query.startsWith('@') ? 
+          query.slice(1).split(/\s+/).slice(1).join(' ') : // Remove @ and first word for mentions
+          query.match(/(?:for|of|about|is|builder|talent)\s+([^\s]+)/i)?.[1]?.trim() || 
+          query.replace(/(?:find|search|get|look up|tell me about)\s+(?:builder|talent|for|about)?\s*/i, '').trim()
+        );
       console.log('Cleaned query:', cleanQuery);
       
       // Check if it's a direct lookup
       const isAddress = cleanQuery.startsWith('0x');
-      const isId = idMatch !== undefined;
+      const isId = /^\d+$/.test(cleanQuery); // Check if query is just a number
       console.log('Is wallet address?', isAddress);
       console.log('Is talent ID?', isId);
       
@@ -140,6 +142,9 @@ export const getBuilderProfileAction: Action = {
         throw error;
       }
 
+      // Detect if the client is Twitter based on message source
+      const isTwitter = message.content?.source === 'twitter';
+      
       // If we got exactly one result, fetch additional credentials
       if (passports.length === 1) {
         const passport = passports[0];
@@ -155,7 +160,7 @@ export const getBuilderProfileAction: Action = {
             credentials
           };
 
-          const response = formatSingleBuilderResponse(enrichedBuilder);
+          const response = formatSingleBuilderResponse(enrichedBuilder, isTwitter);
           console.log('✅ Returning enriched builder profile');
           
           callback({
@@ -170,7 +175,7 @@ export const getBuilderProfileAction: Action = {
           console.log('⚠️ Returning builder profile without credentials');
           
           callback({
-            text: formatSingleBuilderResponse(passport),
+            text: formatSingleBuilderResponse(passport, isTwitter),
             data: { builder: passport },
             state: { lastViewedProfile: passport }
           });
@@ -181,7 +186,7 @@ export const getBuilderProfileAction: Action = {
       // Multiple results - return summarized list
       console.log(`✅ Returning ${passports.length} builders`);
       callback({
-        text: formatMultipleBuilderResponse(passports),
+        text: formatMultipleBuilderResponse(passports, isTwitter),
         data: { builders: passports },
         state: { lastSearchResults: passports }
       });
@@ -198,115 +203,378 @@ export const getBuilderProfileAction: Action = {
   }
 };
 
-function formatSingleBuilderResponse(builder: any): string {
-  const profile = builder.passport_profile;
-  let response = `🏗️ Builder Profile: ${profile.display_name}\n\n`;
+// Constants for Twitter character limits
+const TWITTER_MAX_LENGTH = 280;
+const TWITTER_URL_LENGTH = 23;
+const TWITTER_SAFETY_MARGIN = 20; // Reduced since we'll be more precise now
+const MAX_CREDS_PER_CHUNK = 5; // New constant to limit credentials per chunk
+
+function countTwitterChars(text: string): number {
+  // First normalize the text to NFC form as Twitter does
+  const normalizedText = text.normalize('NFC');
   
-  response += `📊 Builder Score: ${builder.score}\n`;
-  if (profile.location) response += `📍 Location: ${profile.location}\n`;
-  if (profile.bio) response += `💡 Bio: ${profile.bio}\n`;
+  // Replace URLs with placeholder of correct length
+  const urlRegex = /https?:\/\/[^\s]+/g;
+  const textWithoutUrls = normalizedText.replace(urlRegex, 'X'.repeat(TWITTER_URL_LENGTH));
   
-  if (builder.human_checkmark) response += `✓ Verified Builder\n`;
-  if (profile.tags?.length) {
-    response += `🛠️ Skills: ${profile.tags.join(', ')}\n`;
+  // Count CJK characters (they count as 2)
+  const cjkRegex = /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uf900-\ufaff]/g;
+  const cjkChars = textWithoutUrls.match(cjkRegex) || [];
+  const cjkLength = cjkChars.length;
+  
+  // Count emojis (they count as 2)
+  const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]|\u200D[\u2640-\u2642]|\u200D[\u2600-\u2B55]|\u200D[\u{1F300}-\u{1F9FF}]|\u200D[\u{1F600}-\u{1F64F}]|\u200D[\u{1F680}-\u{1F6FF}]|\u200D[\u{2600}-\u{26FF}]|\u200D[\u{2700}-\u{27BF}]/gu;
+  const emojis = textWithoutUrls.match(emojiRegex) || [];
+  const emojiLength = emojis.length;
+  
+  // Base length is the string length minus the extra char for CJK and emojis
+  const baseLength = textWithoutUrls.length;
+  
+  // Total length adds an extra char for each CJK and emoji
+  return baseLength + cjkLength + emojiLength;
+}
+
+function formatCredential(cred: any): string | null {
+  // Skip truly empty/invalid credentials
+  if (!cred.value || 
+      cred.value === 'null' || 
+      cred.value === 'undefined' || 
+      cred.value === '') {
+    return null;
   }
 
-  if (builder.credentials?.length) {
-    const validCredentials = builder.credentials.filter((cred: any) => {
-      // Check if credential has a score
-      if (cred.score > 0) return true;
-      
-      // Check if credential has a meaningful value
-      if (!cred.value) return false;
-      if (typeof cred.value !== 'string') return false;
-      if (cred.value === 'null') return false;
-      if (cred.value === '0') return false;
-      if (cred.value.startsWith('0 ')) return false;
-      if (cred.value === 'Level 0') return false;
-      if (cred.value === 'Humanity Score: 0') return false;
-      if (cred.value === 'Daily Allowance: 0') return false;
-      
-      return true;
-    });
+  // Ensure value is a string before using string methods
+  const value = String(cred.value);
 
-    if (validCredentials.length) {
-      // Group credentials by category
-      const groupedCreds = validCredentials.reduce((acc: any, cred: any) => {
-        const category = cred.category || 'Other';
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(cred);
+  // Skip credentials with 0 values
+  if (value.includes('0 contracts') ||
+      value.includes('0 NFTs') ||
+      value === '0 tokens staked' ||
+      value === 'Daily Allowance: 0' ||
+      value === 'No GCR tokens' ||
+      value === 'Level 0' ||
+      value === 'Humanity Score: 0' ||
+      value === '0 $BUILD Committed' ||
+      value === '0') {
+    return null;
+  }
+
+  let credText = '';
+  
+  // Special formatting for specific credential types
+  switch(cred.type) {
+    case 'ens':
+      credText = `• ENS: https://app.ens.domains/${value}\n`;
+      break;
+    case 'basename':
+      credText = `• Basename: https://www.base.org/name/${value}\n`;
+      break;
+    case 'lens':
+      const lensHandles = value.split(',').map(h => h.trim().replace('@', ''));
+      credText = `• Lens: ${lensHandles.join(', ')}\n`;
+      break;
+    case 'farcaster': {
+      const match = value.match(/FID: (\d+)/);
+      if (match) {
+        credText = `• Farcaster: https://warpcast.com/~/profiles/${match[1]}\n`;
+      }
+      break;
+    }
+    case 'linkedin':
+      if (value) {
+        const linkedinUsername = value.replace(/^https?:\/\/(?:www\.)?linkedin\.com\/in\//, '').replace(/\/$/, '');
+        credText = `• LinkedIn: https://linkedin.com/in/${linkedinUsername}\n`;
+      }
+      break;
+    case 'twitter':
+      credText = `• Twitter/X: @${value.replace('@', '')}\n`;
+      break;
+    case 'github': {
+      // Parse GitHub info - format: "Since YYYY-MM-DD, Total Contributions: X"
+      const match = value.match(/Since ([\d-]+)/);
+      if (match) {
+        credText = `• GitHub: Since ${match[1]}\n`;
+      }
+      break;
+    }
+    case 'github_developer': {
+      const match = value.match(/(\d+) contributions/);
+      if (match) {
+        credText = `• GitHub: ${match[1]} contributions\n`;
+      }
+      break;
+    }
+    case 'build': {
+      // Only show if amount > 0
+      const amount = parseFloat(value.match(/[\d.]+/)?.[0] || '0');
+      if (amount > 0) {
+        credText = `• ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $BUILD Committed\n`;
+      }
+      break;
+    }
+    case 'developer_dao':
+      credText = `• Developer DAO: ${value}\n`;
+      break;
+    case 'base_builder':
+      credText = `• Base Developer: ${value}\n`;
+      break;
+    case 'eth_global':
+      credText = `• ETHGlobal: ${value}\n`;
+      break;
+    case 'gitcoin':
+      credText = `• Gitcoin Passport: ${value}\n`;
+      break;
+    case 'jumper_pass':
+      credText = `• Jumper Pass: ${value}\n`;
+      break;
+    case 'degen': {
+      const match = value.match(/Daily Allowance: (\d+)/);
+      if (match && parseInt(match[1]) > 0) {
+        credText = `• DEGEN: ${match[1]} daily allowance\n`;
+      }
+      break;
+    }
+    default:
+      // For everything else, show if it has a meaningful value
+      if (value && value !== '0' && !value.startsWith('0 ')) {
+        credText = `• ${cred.name}: ${value}\n`;
+      }
+  }
+
+  return credText;
+}
+
+function formatSingleBuilderResponse(builder: any, isTwitter: boolean = false): string {
+  const profile = builder.passport_profile;
+  
+  if (!isTwitter) {
+    // Default non-Twitter formatting
+    let response = `🏗️ Builder Profile: ${profile.display_name}\n`;
+    response += `🔗 https://app.talentprotocol.com/profile/${builder.passport_id}\n\n`;
+    response += `📊 Builder Score: ${builder.score}\n`;
+    if (profile.location) response += `📍 Location: ${profile.location}\n`;
+    if (profile.bio) response += `💡 Bio: ${profile.bio}\n`;
+    if (builder.human_checkmark) response += `✓ Verified Builder\n`;
+    
+    if (profile.tags?.length) {
+      response += `🛠️ Skills: ${profile.tags.join(', ')}\n`;
+    }
+
+    // Group and filter credentials
+    if (builder.credentials?.length) {
+      const groupedCreds = builder.credentials.reduce((acc: any, cred: any) => {
+        const formattedCred = formatCredential(cred);
+        if (formattedCred) {  // Only include if formatting returned a value
+          const category = cred.category || 'Other';
+          if (!acc[category]) acc[category] = [];
+          acc[category].push({ ...cred, formatted: formattedCred });
+        }
         return acc;
       }, {});
 
-      response += `\n🏆 Notable Credentials:\n`;
-      
-      // Order categories
+      // Only add credentials section if we have valid credentials
+      if (Object.keys(groupedCreds).length > 0) {
+        response += `\n🏆 Notable Credentials:\n`;
+        
+        const categoryOrder = ['Identity', 'Skills', 'Activity'];
+        const sortedCategories = [...categoryOrder, ...Object.keys(groupedCreds).filter(c => !categoryOrder.includes(c))];
+        
+        sortedCategories.forEach(category => {
+          if (groupedCreds[category]?.length) {
+            response += `\n${category}:\n`;
+            groupedCreds[category]
+              .sort((a: any, b: any) => b.score - a.score)
+              .forEach((cred: any) => {
+                response += cred.formatted;
+              });
+          }
+        });
+      }
+    }
+
+    if (builder.verified_wallets?.length) {
+      response += `\n💳 Verified Wallets:\n`;
+      builder.verified_wallets.forEach((wallet: string) => {
+        response += `• ${wallet}\n`;
+      });
+    }
+
+    return response;
+  }
+
+  // Twitter-specific chunked formatting
+  const chunks: string[] = [];
+  
+  // First chunk: Basic info
+  let mainChunk = `🏗️ Builder Profile: ${profile.display_name}\n`;
+  mainChunk += `🔗 https://app.talentprotocol.com/profile/${builder.passport_id}\n\n`;
+  mainChunk += `📊 Score: ${builder.score}`;
+  if (builder.human_checkmark) mainChunk += ' ✓';
+  mainChunk += '\n';
+  
+  if (profile.location) mainChunk += `📍 ${profile.location}\n`;
+  if (profile.bio) mainChunk += `💡 ${profile.bio}\n`;
+  if (profile.tags?.length) mainChunk += `🛠️ Skills: ${profile.tags.join(', ')}\n`;
+  chunks.push(mainChunk);
+
+  // Group and filter credentials
+  if (builder.credentials?.length) {
+    const groupedCreds = builder.credentials.reduce((acc: any, cred: any) => {
+      const formattedCred = formatCredential(cred);
+      if (formattedCred) {
+        const category = cred.category || 'Other';
+        if (!acc[category]) acc[category] = [];
+        acc[category].push({ ...cred, formatted: formattedCred, score: cred.score || 0 });
+      }
+      return acc;
+    }, {});
+
+    if (Object.keys(groupedCreds).length > 0) {
       const categoryOrder = ['Identity', 'Skills', 'Activity'];
       const sortedCategories = [...categoryOrder, ...Object.keys(groupedCreds).filter(c => !categoryOrder.includes(c))];
       
       sortedCategories.forEach(category => {
-        if (groupedCreds[category]?.length) {
-          response += `\n${category}:\n`;
-          groupedCreds[category]
-            .sort((a: any, b: any) => b.score - a.score)
-            .forEach((cred: any) => {
-              let credText = `• ${cred.name}`;
-              if (cred.value && typeof cred.value === 'string' && 
-                  !cred.value.toLowerCase().includes(cred.name.toLowerCase()) &&
-                  cred.value !== 'Member') {
-                credText += `: ${cred.value}`;
-              }
-              response += `${credText}\n`;
-            });
+        if (!groupedCreds[category]?.length) return;
+
+        // Sort credentials by score within category
+        const sortedCreds = groupedCreds[category].sort((a: any, b: any) => b.score - a.score);
+        
+        let currentChunk = `• ${category}:\n`;
+        let credsInCurrentChunk = 0;
+
+        sortedCreds.forEach((cred: any) => {
+          const credText = cred.formatted;
+          const potentialChunk = currentChunk + credText;
+
+          // Now we use exact Twitter character counting
+          if (countTwitterChars(potentialChunk) > TWITTER_MAX_LENGTH - TWITTER_SAFETY_MARGIN) {
+            // Save current chunk and start new one
+            if (currentChunk !== `• ${category}:\n`) {
+              chunks.push(currentChunk.trim());
+            }
+            currentChunk = `• ${category} (cont.):\n${credText}`;
+          } else {
+            currentChunk += credText;
+          }
+        });
+
+        // Add final chunk for this category if it exists
+        if (currentChunk !== `• ${category}:\n`) {
+          chunks.push(currentChunk.trim());
         }
       });
     }
   }
 
+  // Handle wallets separately
   if (builder.verified_wallets?.length) {
-    response += `\n💳 Verified Wallets:\n`;
+    let walletChunk = `💳 Verified Wallets:\n`;
+    let walletsInChunk = 0;
+
     builder.verified_wallets.forEach((wallet: string) => {
-      response += `• ${wallet}\n`;
+      const line = `• ${wallet}\n`;
+      const potentialChunk = walletChunk + line;
+
+      if (walletsInChunk >= MAX_CREDS_PER_CHUNK || 
+          countTwitterChars(potentialChunk) > TWITTER_MAX_LENGTH - TWITTER_SAFETY_MARGIN) {
+        chunks.push(walletChunk.trim());
+        walletChunk = `💳 Verified Wallets (cont.):\n${line}`;
+        walletsInChunk = 1;
+      } else {
+        walletChunk += line;
+        walletsInChunk++;
+      }
     });
+
+    if (walletChunk !== `💳 Verified Wallets:\n`) {
+      chunks.push(walletChunk.trim());
+    }
   }
 
-  return response;
+  // Add thread markers and join chunks
+  return chunks.map((chunk, i) => {
+    const threadMarker = i < chunks.length - 1 ? `\n\n🧵 ${i + 2}/${chunks.length}` : '';
+    return chunk.trim() + threadMarker;
+  }).join('\n\n---\n\n');
 }
 
-function formatMultipleBuilderResponse(builders: TalentPassport[]): string {
+function formatMultipleBuilderResponse(builders: TalentPassport[], isTwitter: boolean = false): string {
   if (!builders.length) {
     return "No builders found matching your criteria. Try different search terms!";
   }
 
-  let response = `Found ${builders.length} builders:\n\n`;
+  if (!isTwitter) {
+    // Default non-Twitter formatting
+    let response = `Found ${builders.length} builders:\n\n`;
+    
+    builders.forEach((builder, index) => {
+      const profile = builder.passport_profile;
+      response += `${index + 1}. ${profile.display_name}\n`;
+      response += `   Builder Score: ${builder.score}\n`;
+      
+      if (profile.location) {
+        response += `   📍 ${profile.location}\n`;
+      }
+      
+      if (profile.tags?.length) {
+        response += `   🛠️ ${profile.tags.join(', ')}\n`;
+      }
+      
+      if (profile.bio) {
+        const truncatedBio = profile.bio.length > 100 ? 
+          profile.bio.substring(0, 97) + '...' : 
+          profile.bio;
+        response += `   💡 ${truncatedBio}\n`;
+      }
+      
+      if (builder.human_checkmark) {
+        response += `   ✓ Verified Builder\n`;
+      }
+      
+      response += '\n';
+    });
+    
+    return response;
+  }
+
+  // Twitter-specific chunked formatting
+  const chunks: string[] = [];
+  let currentChunk = `Found ${builders.length} builders:\n\n`;
   
   builders.forEach((builder, index) => {
     const profile = builder.passport_profile;
-    response += `${index + 1}. ${profile.display_name}\n`;
-    response += `   Builder Score: ${builder.score}\n`;
+    let builderText = `${index + 1}. ${profile.display_name}\n`;
+    builderText += `   Score: ${builder.score}${builder.human_checkmark ? ' ✓' : ''}\n`;
     
     if (profile.location) {
-      response += `   📍 ${profile.location}\n`;
+      builderText += `   📍 ${profile.location}\n`;
     }
     
     if (profile.tags?.length) {
-      response += `   🛠️ ${profile.tags.join(', ')}\n`;
+      builderText += `   🛠️ ${profile.tags.join(', ')}\n`;
     }
     
     if (profile.bio) {
-      // Truncate bio if too long
       const truncatedBio = profile.bio.length > 100 ? 
         profile.bio.substring(0, 97) + '...' : 
         profile.bio;
-      response += `   💡 ${truncatedBio}\n`;
+      builderText += `   💡 ${truncatedBio}\n`;
     }
     
-    if (builder.human_checkmark) {
-      response += `   ✓ Verified Builder\n`;
+    builderText += '\n';
+
+    // Check if adding this builder would exceed tweet limit
+    if ((currentChunk + builderText).length > 240) {
+      chunks.push(currentChunk.trim());
+      currentChunk = builderText;
+    } else {
+      currentChunk += builderText;
     }
-    
-    response += '\n';
   });
 
-  return response;
-} 
+  if (currentChunk) chunks.push(currentChunk.trim());
+
+  return chunks.map((chunk, i) => 
+    `${chunk}${i < chunks.length - 1 ? '\n\n🧵 cont...' : ''}`
+  ).join('\n\n---\n\n');
+}
